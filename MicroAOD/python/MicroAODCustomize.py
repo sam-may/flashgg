@@ -132,7 +132,8 @@ class MicroAODCustomize(object):
                 self.customizeDataMuons(process)
         elif "sig" in self.processType.lower():
             doRivet = not ("fcnc" in self.processType.lower())
-            self.customizeSignal(process, doRivet)
+            doPDF = False # FIXME figure out how to make microAOD production not crash with PDF weights turned on
+            self.customizeSignal(process, doRivet, doPDF)
 
             if "tth" in customize.datasetName.lower():
                 self.customizeTTH(process)
@@ -196,7 +197,7 @@ class MicroAODCustomize(object):
         print "Final customized process:",process.p
             
     # signal specific customization
-    def customizeSignal(self,process,doRivet=True):
+    def customizeSignal(self,process,doRivet=True,doPDF=True):
         print "customizeSignal"
         process.flashggGenPhotonsExtra.defaultType = 1
         import flashgg.MicroAOD.flashggMETs_cff
@@ -254,7 +255,8 @@ class MicroAODCustomize(object):
             process.p *= process.rivetProducerHTXS
             process.out.outputCommands.append('keep *_rivetProducerHTXS_*_*')
 
-        self.customizePDFs(process)
+        if doPDF:
+            self.customizePDFs(process)
         self.customizeHLT(process)
 
     def customizePDFs(self,process):     

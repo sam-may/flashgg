@@ -26,6 +26,7 @@
 
 #include "flashgg/Taggers/interface/BDT_resolvedTopTagger.h"
 #include "flashgg/Taggers/interface/TTH_DNN_Helper.h"
+#include "flashgg/Taggers/interface/TopRecoHelper.h"
 
 #include <vector>
 #include <algorithm>
@@ -206,6 +207,33 @@ namespace flashgg {
 
         float dnn_score_0_;
         float dnn_score_1_;
+
+        //------------------------------//
+        float chi2_tbw_mass_;
+        float chi2_tbw_pt_;
+        float chi2_tbw_eta_;
+        float chi2_tbw_deltaR_dipho_;
+        float chi2_qjet_pt_;
+        float chi2_qjet_eta_;
+        float chi2_qjet_btag_;
+        float chi2_qjet_deltaR_dipho_;
+        float chi2_tqh_ptOverM_;
+        float chi2_tqh_eta_;
+        float chi2_tqh_deltaR_tbw_;
+        float chi2_tqh_deltaR_dipho_;
+        float chi2_3x3_tbw_mass_;
+        float chi2_3x3_tbw_pt_;
+        float chi2_3x3_tbw_eta_;
+        float chi2_3x3_tbw_deltaR_dipho_;
+        float chi2_3x3_qjet_pt_;
+        float chi2_3x3_qjet_eta_;
+        float chi2_3x3_qjet_btag_;
+        float chi2_3x3_qjet_deltaR_dipho_;
+        float chi2_3x3_tqh_ptOverM_;
+        float chi2_3x3_tqh_eta_;
+        float chi2_3x3_tqh_deltaR_tbw_;
+        float chi2_3x3_tqh_deltaR_dipho_;
+        //------------------------------//
 
         vector<double> boundaries;
 
@@ -454,6 +482,33 @@ namespace flashgg {
         dnn_score_0_ = -999.;
         dnn_score_1_ = -999.;
 
+        //------------------------------//
+        chi2_tbw_mass_ = -999.;
+        chi2_tbw_pt_ = -999.;
+        chi2_tbw_eta_ = -999.;
+        chi2_tbw_deltaR_dipho_ = -999.;
+        chi2_qjet_pt_ = -999.;
+        chi2_qjet_eta_ = -999.;
+        chi2_qjet_btag_ = -999.;
+        chi2_qjet_deltaR_dipho_ = -999.;
+        chi2_tqh_ptOverM_ = -999.;
+        chi2_tqh_eta_ = -999.;
+        chi2_tqh_deltaR_tbw_ = -999.;
+        chi2_tqh_deltaR_dipho_ = -999.;
+        chi2_3x3_tbw_mass_ = -999.;
+        chi2_3x3_tbw_pt_ = -999.;
+        chi2_3x3_tbw_eta_ = -999.;
+        chi2_3x3_tbw_deltaR_dipho_ = -999.;
+        chi2_3x3_qjet_pt_ = -999.;
+        chi2_3x3_qjet_eta_ = -999.;
+        chi2_3x3_qjet_btag_ = -999.;
+        chi2_3x3_qjet_deltaR_dipho_ = -999.;
+        chi2_3x3_tqh_ptOverM_ = -999.;
+        chi2_3x3_tqh_eta_ = -999.;
+        chi2_3x3_tqh_deltaR_tbw_ = -999.;
+        chi2_3x3_tqh_deltaR_dipho_ = -999.;
+        //------------------------------//
+        
         if (_MVAMethod != ""){
             TThMva_.reset( new TMVA::Reader( "!Color:Silent" ) );
 
@@ -573,12 +628,41 @@ namespace flashgg {
             FCNCMva_RunII_->AddVariable("dipho_pt_over_mass_", &diPhoPtoM_);
 
             FCNCMva_RunII_->AddVariable("helicity_angle_", &helicity_angle_);
-            FCNCMva_RunII_->AddVariable("m_ggj_", &m_ggj_); 
-            FCNCMva_RunII_->AddVariable("m_jjj_", &m_jjj_); 
 
-            //FCNCMva_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
+            FCNCMva_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
             //FCNCMva_RunII_->AddVariable("dnn_score_0", &dnn_score_0_);
             //FCNCMva_RunII_->AddVariable("dnn_score_1", &dnn_score_1_);
+            
+            //------------------------------//
+            FCNCMva_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
+            FCNCMva_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
+            FCNCMva_RunII_->AddVariable("chi2_tbw_eta_", &chi2_tbw_eta_);
+            FCNCMva_RunII_->AddVariable("chi2_tbw_deltaR_dipho_", &chi2_tbw_deltaR_dipho_);
+            FCNCMva_RunII_->AddVariable("chi2_qjet_pt_", &chi2_qjet_pt_);
+            FCNCMva_RunII_->AddVariable("chi2_qjet_eta_", &chi2_qjet_eta_);
+            FCNCMva_RunII_->AddVariable("chi2_qjet_btag_", &chi2_qjet_btag_);
+            FCNCMva_RunII_->AddVariable("chi2_qjet_deltaR_dipho_", &chi2_qjet_deltaR_dipho_);
+            FCNCMva_RunII_->AddVariable("chi2_tqh_ptOverM_", &chi2_tqh_ptOverM_);
+            FCNCMva_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
+            FCNCMva_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
+            FCNCMva_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_tbw_mass_", &chi2_3x3_tbw_mass_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_tbw_pt_", &chi2_3x3_tbw_pt_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_tbw_eta_", &chi2_3x3_tbw_eta_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_tbw_deltaR_dipho_", &chi2_3x3_tbw_deltaR_dipho_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_qjet_pt_", &chi2_3x3_qjet_pt_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_qjet_eta_", &chi2_3x3_qjet_eta_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_qjet_btag_", &chi2_3x3_qjet_btag_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_qjet_deltaR_dipho_", &chi2_3x3_qjet_deltaR_dipho_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_tqh_ptOverM_", &chi2_3x3_tqh_ptOverM_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_tqh_eta_", &chi2_3x3_tqh_eta_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_tqh_deltaR_tbw_", &chi2_3x3_tqh_deltaR_tbw_);
+            FCNCMva_RunII_->AddVariable("chi2_3x3_tqh_deltaR_dipho_", &chi2_3x3_tqh_deltaR_dipho_);
+            //------------------------------//
+            
+            FCNCMva_RunII_->AddVariable("m_ggj_", &m_ggj_); 
+            FCNCMva_RunII_->AddVariable("m_jjj_", &m_jjj_); 
+            
             
             if (coupling_ == "Hut") {
                 std::cout << "Coupling selected as " << coupling_ << ", loading the following MVA: " << fcncHutMVAWeightFile_.fullPath() << std::endl;
@@ -795,6 +879,11 @@ namespace flashgg {
 
                 edm::Ptr<flashgg::DiPhotonCandidate> dipho = diPhotons->ptrAt( diphoIndex );
 
+                TLorentzVector pho1, pho2;
+                pho1.SetPtEtaPhiE(dipho->leadingPhoton()->pt(), dipho->leadingPhoton()->eta(), dipho->leadingPhoton()->phi(), dipho->leadingPhoton()->energy());
+                pho2.SetPtEtaPhiE(dipho->subLeadingPhoton()->pt(), dipho->subLeadingPhoton()->eta(), dipho->subLeadingPhoton()->phi(), dipho->subLeadingPhoton()->energy());
+                TLorentzVector diphoton = pho1 + pho2;
+
                 if(!passMETfilters && applyMETfilters_) continue;
 
                 std::vector<edm::Ptr<flashgg::Muon> >     Muons;
@@ -884,6 +973,33 @@ namespace flashgg {
                 m_ggj_ = -999.;
                 m_jjj_ = -999.;
 
+                //------------------------------//
+                chi2_tbw_mass_ = -999.;
+                chi2_tbw_pt_ = -999.;
+                chi2_tbw_eta_ = -999.;
+                chi2_tbw_deltaR_dipho_ = -999.;
+                chi2_qjet_pt_ = -999.;
+                chi2_qjet_eta_ = -999.;
+                chi2_qjet_btag_ = -999.;
+                chi2_qjet_deltaR_dipho_ = -999.;
+                chi2_tqh_ptOverM_ = -999.;
+                chi2_tqh_eta_ = -999.;
+                chi2_tqh_deltaR_tbw_ = -999.;
+                chi2_tqh_deltaR_dipho_ = -999.;
+                chi2_3x3_tbw_mass_ = -999.;
+                chi2_3x3_tbw_pt_ = -999.;
+                chi2_3x3_tbw_eta_ = -999.;
+                chi2_3x3_tbw_deltaR_dipho_ = -999.;
+                chi2_3x3_qjet_pt_ = -999.;
+                chi2_3x3_qjet_eta_ = -999.;
+                chi2_3x3_qjet_btag_ = -999.;
+                chi2_3x3_qjet_deltaR_dipho_ = -999.;
+                chi2_3x3_tqh_ptOverM_ = -999.;
+                chi2_3x3_tqh_eta_ = -999.;
+                chi2_3x3_tqh_deltaR_tbw_ = -999.;
+                chi2_3x3_tqh_deltaR_dipho_ = -999.;
+                //------------------------------//
+
                 unsigned int jetCollectionIndex = diPhotons->ptrAt( diphoIndex )->jetCollectionIndex();
 
                 std::vector<edm::Ptr<flashgg::Jet> > JetVect;
@@ -935,6 +1051,8 @@ namespace flashgg {
                 }
 
 
+                std::vector<TLorentzVector> jets;
+                std::vector<double> btag_scores;
                 for( unsigned int jetIndex = 0; jetIndex < Jets[jetCollectionIndex]->size() ; jetIndex++ ) {
                     edm::Ptr<flashgg::Jet> thejet = Jets[jetCollectionIndex]->ptrAt( jetIndex );
                     if( fabs( thejet->eta() ) > jetEtaThreshold_ ) { continue; }
@@ -950,11 +1068,17 @@ namespace flashgg {
                     nJets_ = jetcount_;
                     JetVect.push_back( thejet );
 
+                    TLorentzVector jet_four_momentum_;
+                    jet_four_momentum_.SetPtEtaPhiE(thejet->pt(), thejet->eta(), thejet->phi(), thejet->energy());
+                    jets.push_back(jet_four_momentum_);
+
                     ht_ += thejet->pt();
                     
                     float bDiscriminatorValue = -2.;
                     if(bTag_ == "pfDeepCSV") bDiscriminatorValue = thejet->bDiscriminator("pfDeepCSVJetTags:probb")+thejet->bDiscriminator("pfDeepCSVJetTags:probbb") ;
                     else  bDiscriminatorValue = thejet->bDiscriminator( bTag_ );
+
+                    btag_scores.push_back(bDiscriminatorValue);
 
                     float bDiscriminatorValue_noBB = -2;
                     if(bTag_ == "pfDeepCSV") bDiscriminatorValue_noBB = thejet->bDiscriminator("pfDeepCSVJetTags:probb");
@@ -1215,6 +1339,59 @@ namespace flashgg {
                   pho2.SetPtEtaPhiE(dipho->subLeadingPhoton()->pt(), dipho->subLeadingPhoton()->eta(), dipho->subLeadingPhoton()->phi(), dipho->subLeadingPhoton()->energy());
                   helicity_angle_ = helicity(pho1, pho2);
 
+                  //#chi-2 related
+                  vector<int> _null_vector_;
+                  vector<int> indices_bjet = get_bjet_indices(jets, btag_scores);
+
+                  bool is_moreThanThreeJets_and_atLeastOneBjet = jets.size() > 3 && indices_bjet.size() > 0;
+                  bool is_moreThanTwoJets_and_atLeastOneBjet   = jets.size() > 2 && indices_bjet.size() > 0;
+                  vector<int> index_jet_chi2_modified = is_moreThanThreeJets_and_atLeastOneBjet ? get_bjjq_indices_min_chi2(jets, indices_bjet, diphoton, true) :
+                                                       (is_moreThanTwoJets_and_atLeastOneBjet   ? get_bjj_indices_min_chi2(jets, indices_bjet, true) : _null_vector_);
+                  vector<int> index_jet_chi2_improved = is_moreThanThreeJets_and_atLeastOneBjet ? get_bjjq_indices_min_chi2_3x3(jets, indices_bjet, diphoton) : _null_vector_;
+                  
+                  //variables
+                  TLorentzVector _nothing_;
+                  TLorentzVector chi2_bjet      = is_moreThanTwoJets_and_atLeastOneBjet   ? jets[index_jet_chi2_modified[0]]                : _nothing_;
+                  TLorentzVector chi2_wjet1     = is_moreThanTwoJets_and_atLeastOneBjet   ? jets[index_jet_chi2_modified[1]]                : _nothing_;
+                  TLorentzVector chi2_wjet2     = is_moreThanTwoJets_and_atLeastOneBjet   ? jets[index_jet_chi2_modified[2]]                : _nothing_;
+                  TLorentzVector chi2_qjet      = is_moreThanThreeJets_and_atLeastOneBjet ? jets[index_jet_chi2_modified[3]]                : _nothing_;
+                  TLorentzVector chi2_tbw       = is_moreThanTwoJets_and_atLeastOneBjet   ? chi2_bjet + chi2_wjet1 + chi2_wjet2             : _nothing_;
+                  TLorentzVector chi2_tqh       = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_qjet + diphoton                            : _nothing_;
+
+                  chi2_tbw_mass_                = is_moreThanTwoJets_and_atLeastOneBjet   ? chi2_tbw.M()                                    : -999;
+                  chi2_tbw_pt_                  = is_moreThanTwoJets_and_atLeastOneBjet   ? chi2_tbw.Pt()                                   : -999;
+                  chi2_tbw_eta_                 = is_moreThanTwoJets_and_atLeastOneBjet   ? chi2_tbw.Eta()                                  : -999;
+                  chi2_tbw_deltaR_dipho_        = is_moreThanTwoJets_and_atLeastOneBjet   ? chi2_tbw.DeltaR(diphoton)                       : -999;
+                  chi2_qjet_pt_                 = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_qjet.Pt()                                  : -999;
+                  chi2_qjet_eta_                = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_qjet.Eta()                                 : -999;
+                  chi2_qjet_btag_               = is_moreThanThreeJets_and_atLeastOneBjet ? btag_scores[index_jet_chi2_modified[3]]         : -999;
+                  chi2_qjet_deltaR_dipho_       = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_qjet.DeltaR(diphoton)                      : -999;
+                  chi2_tqh_ptOverM_             = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_tqh.Pt()/chi2_tqh.M()                      : -999;
+                  chi2_tqh_eta_                 = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_tqh.Eta()                                  : -999;
+                  chi2_tqh_deltaR_tbw_          = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_tqh.DeltaR(chi2_tbw)                       : -999;
+                  chi2_tqh_deltaR_dipho_        = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_tqh.DeltaR(diphoton)                       : -999;
+
+                  TLorentzVector chi2_3x3_bjet  = is_moreThanThreeJets_and_atLeastOneBjet ? jets[index_jet_chi2_improved[0]]                : _nothing_;
+                  TLorentzVector chi2_3x3_wjet1 = is_moreThanThreeJets_and_atLeastOneBjet ? jets[index_jet_chi2_improved[1]]                : _nothing_;
+                  TLorentzVector chi2_3x3_wjet2 = is_moreThanThreeJets_and_atLeastOneBjet ? jets[index_jet_chi2_improved[2]]                : _nothing_;
+                  TLorentzVector chi2_3x3_qjet  = is_moreThanThreeJets_and_atLeastOneBjet ? jets[index_jet_chi2_improved[3]]                : _nothing_;
+                  TLorentzVector chi2_3x3_tbw   = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_bjet + chi2_3x3_wjet1 + chi2_3x3_wjet2 : _nothing_;
+                  TLorentzVector chi2_3x3_tqh   = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_qjet + diphoton                        : _nothing_;
+
+                  chi2_3x3_tbw_mass_            = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_tbw.M()                                : -999;
+                  chi2_3x3_tbw_pt_              = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_tbw.Pt()                               : -999;
+                  chi2_3x3_tbw_eta_             = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_tbw.Eta()                              : -999;
+                  chi2_3x3_tbw_deltaR_dipho_    = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_tbw.DeltaR(diphoton)                   : -999;
+                  chi2_3x3_qjet_pt_             = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_qjet.Pt()                              : -999;
+                  chi2_3x3_qjet_eta_            = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_qjet.Eta()                             : -999;
+                  chi2_3x3_qjet_btag_           = is_moreThanThreeJets_and_atLeastOneBjet ? btag_scores[index_jet_chi2_improved[3]]         : -999;
+                  chi2_3x3_qjet_deltaR_dipho_   = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_qjet.DeltaR(diphoton)                  : -999;
+                  chi2_3x3_tqh_ptOverM_         = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_tqh.Pt()/chi2_3x3_tqh.M()              : -999;
+                  chi2_3x3_tqh_eta_             = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_tqh.Eta()                              : -999;
+                  chi2_3x3_tqh_deltaR_tbw_      = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_tqh.DeltaR(chi2_3x3_tbw)               : -999;
+                  chi2_3x3_tqh_deltaR_dipho_    = is_moreThanThreeJets_and_atLeastOneBjet ? chi2_3x3_tqh.DeltaR(diphoton)                   : -999;
+                  //------------------------------//
+
                   calculate_masses(JetVect, dipho, m_ggj_, m_jjj_); 
 
                   top_tag_score_ = mvaEval.size() > 0 ? (mvaEval[0] != - 99 ? mvaEval[0] : -1) : - 1;
@@ -1261,6 +1438,33 @@ namespace flashgg {
                     cout << "dipho_pt_over_mass_: " << diPhoPtoM_ << endl;
                     cout << "helicity_angle_: " << helicity_angle_ << endl;
                     cout << "top_tag_score_: " << top_tag_score_ << endl;
+
+                    //------------------------------//
+                    cout << "chi2_tbw_mass_:" << chi2_tbw_mass_ << endl;
+                    cout << "chi2_tbw_pt_:" << chi2_tbw_pt_ << endl;
+                    cout << "chi2_tbw_eta_:" << chi2_tbw_eta_ << endl;
+                    cout << "chi2_tbw_deltaR_dipho_:" << chi2_tbw_deltaR_dipho_ << endl;
+                    cout << "chi2_qjet_pt_:" << chi2_qjet_pt_ << endl;
+                    cout << "chi2_qjet_eta_:" << chi2_qjet_eta_ << endl;
+                    cout << "chi2_qjet_btag_:" << chi2_qjet_btag_ << endl;
+                    cout << "chi2_qjet_deltaR_dipho_:" << chi2_qjet_deltaR_dipho_ << endl;
+                    cout << "chi2_tqh_ptOverM_:" << chi2_tqh_ptOverM_ << endl;
+                    cout << "chi2_tqh_eta_:" << chi2_tqh_eta_ << endl;
+                    cout << "chi2_tqh_deltaR_tbw_:" << chi2_tqh_deltaR_tbw_ << endl;
+                    cout << "chi2_tqh_deltaR_dipho_:" << chi2_tqh_deltaR_dipho_ << endl;
+                    cout << "chi2_3x3_tbw_mass_:" << chi2_3x3_tbw_mass_ << endl;
+                    cout << "chi2_3x3_tbw_pt_:" << chi2_3x3_tbw_pt_ << endl;
+                    cout << "chi2_3x3_tbw_eta_:" << chi2_3x3_tbw_eta_ << endl;
+                    cout << "chi2_3x3_tbw_deltaR_dipho_:" << chi2_3x3_tbw_deltaR_dipho_ << endl;
+                    cout << "chi2_3x3_qjet_pt_:" << chi2_3x3_qjet_pt_ << endl;
+                    cout << "chi2_3x3_qjet_eta_:" << chi2_3x3_qjet_eta_ << endl;
+                    cout << "chi2_3x3_qjet_btag_:" << chi2_3x3_qjet_btag_ << endl;
+                    cout << "chi2_3x3_qjet_deltaR_dipho_:" << chi2_3x3_qjet_deltaR_dipho_ << endl;
+                    cout << "chi2_3x3_tqh_ptOverM_:" << chi2_3x3_tqh_ptOverM_ << endl;
+                    cout << "chi2_3x3_tqh_eta_:" << chi2_3x3_tqh_eta_ << endl;
+                    cout << "chi2_3x3_tqh_deltaR_tbw_:" << chi2_3x3_tqh_deltaR_tbw_ << endl;
+                    cout << "chi2_3x3_tqh_deltaR_dipho_:" << chi2_3x3_tqh_deltaR_dipho_ << endl;
+                    //------------------------------//
 
                     cout << "m_ggj_: " << m_ggj_ << endl;
                     cout << "m_jjj_: " << m_jjj_ << endl;

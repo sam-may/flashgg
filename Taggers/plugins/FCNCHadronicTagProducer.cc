@@ -49,6 +49,7 @@ namespace flashgg {
     private:
         void produce( Event &, const EventSetup & ) override;
         int  chooseCategory( float );
+        int  chooseCategory( float, float );
         void calculate_masses(std::vector<edm::Ptr<flashgg::Jet>> jets, edm::Ptr<flashgg::DiPhotonCandidate> dipho, float &m_ggj, float &m_jjj); 
 
         std::vector<edm::EDGetTokenT<View<flashgg::Jet> > > tokenJets_;
@@ -125,6 +126,13 @@ namespace flashgg {
         FileInPath fcncHutMVAWeightFile_;
         FileInPath fcncHctMVAWeightFile_;
 
+        unique_ptr<TMVA::Reader> FCNC_BDTNRB_RunII_;
+        FileInPath fcncHutBDTNRBWeightFile_;
+        FileInPath fcncHctBDTNRBWeightFile_;
+
+        unique_ptr<TMVA::Reader> FCNC_BDTSMH_RunII_;
+        FileInPath fcncHutBDTSMHWeightFile_;
+        FileInPath fcncHctBDTSMHWeightFile_; 
 
         int jetcount_;
         float nJets_;
@@ -185,6 +193,8 @@ namespace flashgg {
         float tthMvaVal_RunII_;
 
         float fcncMvaVal_;
+        float fcncMvaVal_NRB_;
+        float fcncMvaVal_SMH_;
         
         float maxBTagVal_noBB_;
         float secondMaxBTagVal_noBB_;
@@ -236,6 +246,8 @@ namespace flashgg {
         //------------------------------//
 
         vector<double> boundaries;
+        vector<double> boundaries_BDTNRB;
+        vector<double> boundaries_BDTSMH;
 
         BDT_resolvedTopTagger *topTagger;
         TTH_DNN_Helper* dnn_dipho;
@@ -355,11 +367,19 @@ namespace flashgg {
         for (auto & tag : metTags)
            metTokens_.push_back(consumes<edm::View<flashgg::Met>>(tag)); 
 
-        if (coupling_ == "Hut")
+        if (coupling_ == "Hut") {
             boundaries = iConfig.getParameter<vector<double > >( "BoundariesHut" );
-        else if (coupling_ == "Hct")
+            boundaries_BDTNRB = iConfig.getParameter<vector<double > >( "BoundariesHutNRB" );
+            boundaries_BDTSMH = iConfig.getParameter<vector<double > >( "BoundariesHutSMH" );
+        }
+        else if (coupling_ == "Hct") {
             boundaries = iConfig.getParameter<vector<double > >( "BoundariesHct" );
+            boundaries_BDTNRB = iConfig.getParameter<vector<double > >( "BoundariesHctNRB" );
+            boundaries_BDTSMH = iConfig.getParameter<vector<double > >( "BoundariesHctSMH" );
+        }
         assert( is_sorted( boundaries.begin(), boundaries.end() ) ); // 
+        assert( is_sorted( boundaries_BDTNRB.begin(), boundaries_BDTNRB.end() ) ); // 
+        assert( is_sorted( boundaries_BDTSMH.begin(), boundaries_BDTSMH.end() ) ); // 
 
         MVAThreshold_ = iConfig.getParameter<double>( "MVAThreshold");
         MVATTHHMVAThreshold_ = iConfig.getParameter<double>( "MVATTHHMVAThreshold");
@@ -409,6 +429,11 @@ namespace flashgg {
 
         fcncHutMVAWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHutMVAWeightFile" );
         fcncHctMVAWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHctMVAWeightFile" );
+
+        fcncHutBDTNRBWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHutBDTNRBAWeightFile" );
+        fcncHctBDTNRBWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHctBDTNRBAWeightFile" );
+        fcncHutBDTSMHWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHutBDTSMHAWeightFile" );
+        fcncHctBDTSMHWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHctBDTSMHAWeightFile" );
 
         nJets_ = 0;
         leadJetPt_ = 0.;
@@ -591,87 +616,157 @@ namespace flashgg {
 
             TThMva_RunII_->BookMVA(_MVAMethod.c_str(), tthMVA_RunII_weightfile_.fullPath()); 
 
-            FCNCMva_RunII_.reset( new TMVA::Reader( "!Color:Silent" ) );
+            FCNC_BDTNRB_RunII_.reset( new TMVA::Reader( "!Color:Silent" ) );
+            FCNC_BDTSMH_RunII_.reset( new TMVA::Reader( "!Color:Silent" ) );
 
-            FCNCMva_RunII_->AddVariable("maxIDMVA_", &maxPhoID_);
-            FCNCMva_RunII_->AddVariable("minIDMVA_", &minPhoID_);
-            FCNCMva_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
-            FCNCMva_RunII_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
-            FCNCMva_RunII_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
-            FCNCMva_RunII_->AddVariable("njets_", &nJets_);
-            FCNCMva_RunII_->AddVariable("ht_", &ht_);
-            FCNCMva_RunII_->AddVariable("leadptoM_", &pho1_ptoM_);
-            FCNCMva_RunII_->AddVariable("subleadptoM_", &pho2_ptoM_);
-            FCNCMva_RunII_->AddVariable("lead_eta_", &pho1_eta_);
-            FCNCMva_RunII_->AddVariable("sublead_eta_", &pho2_eta_);
+            FCNC_BDTNRB_RunII_->AddVariable("helicity_angle_", &helicity_angle_);
+            FCNC_BDTNRB_RunII_->AddVariable("dipho_pt_over_mass_", &diPhoPtoM_);
+            FCNC_BDTNRB_RunII_->AddVariable("met_", &MET_);
+            FCNC_BDTNRB_RunII_->AddVariable("dipho_rapidity_", &diPhoY_);
+            FCNC_BDTNRB_RunII_->AddVariable("dipho_cosphi_", &diPhoCosPhi_);
 
-            FCNCMva_RunII_->AddVariable("jet1_pt_", &jetPt_1_);
-            FCNCMva_RunII_->AddVariable("jet1_eta_", &jetEta_1_);
-            FCNCMva_RunII_->AddVariable("jet1_btag_", &btag_noBB_1_);
-            FCNCMva_RunII_->AddVariable("jet2_pt_", &jetPt_2_);
-            FCNCMva_RunII_->AddVariable("jet2_eta_", &jetEta_2_);
-            FCNCMva_RunII_->AddVariable("jet2_btag_", &btag_noBB_2_);
-            FCNCMva_RunII_->AddVariable("jet3_pt_", &jetPt_3_);
-            FCNCMva_RunII_->AddVariable("jet3_eta_", &jetEta_3_);
-            FCNCMva_RunII_->AddVariable("jet3_btag_", &btag_noBB_3_);
-            FCNCMva_RunII_->AddVariable("jet4_pt_", &jetPt_4_);
-            FCNCMva_RunII_->AddVariable("jet4_eta_", &jetEta_4_);
-            FCNCMva_RunII_->AddVariable("jet4_btag_", &btag_noBB_4_);
+            FCNC_BDTNRB_RunII_->AddVariable("subleadPSV_", &pho2_hasPixelSeed_);
+            FCNC_BDTNRB_RunII_->AddVariable("leadPSV_", &pho1_hasPixelSeed_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet3_btag_", &btag_noBB_3_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet3_eta_", &jetEta_3_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet3_pt_", &jetPt_3_);
 
-            FCNCMva_RunII_->AddVariable("leadPSV_", &pho1_hasPixelSeed_);
-            FCNCMva_RunII_->AddVariable("subleadPSV_", &pho2_hasPixelSeed_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet2_btag_", &btag_noBB_2_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet2_eta_", &jetEta_2_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet2_pt_", &jetPt_2_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet1_btag_", &btag_noBB_1_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet1_eta_", &jetEta_1_);
 
-            FCNCMva_RunII_->AddVariable("dipho_cosphi_", &diPhoCosPhi_);
-            FCNCMva_RunII_->AddVariable("dipho_rapidity_", &diPhoY_);
-            FCNCMva_RunII_->AddVariable("met_", &MET_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet1_pt_", &jetPt_1_);
+            FCNC_BDTNRB_RunII_->AddVariable("sublead_eta_", &pho2_eta_);
+            FCNC_BDTNRB_RunII_->AddVariable("lead_eta_", &pho1_eta_);
+            FCNC_BDTNRB_RunII_->AddVariable("subleadptoM_", &pho2_ptoM_);
+            FCNC_BDTNRB_RunII_->AddVariable("leadptoM_", &pho1_ptoM_);
 
-            FCNCMva_RunII_->AddVariable("dipho_pt_over_mass_", &diPhoPtoM_);
+            FCNC_BDTNRB_RunII_->AddVariable("ht_", &ht_);
+            FCNC_BDTNRB_RunII_->AddVariable("njets_", &nJets_);
+            FCNC_BDTNRB_RunII_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
+            FCNC_BDTNRB_RunII_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
+            FCNC_BDTNRB_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
 
-            FCNCMva_RunII_->AddVariable("helicity_angle_", &helicity_angle_);
+            FCNC_BDTNRB_RunII_->AddVariable("minIDMVA_", &minPhoID_);
+            FCNC_BDTNRB_RunII_->AddVariable("maxIDMVA_", &maxPhoID_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet4_btag_", &btag_noBB_4_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet4_eta_", &jetEta_4_);
+            FCNC_BDTNRB_RunII_->AddVariable("jet4_pt_", &jetPt_4_);
 
-            FCNCMva_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
-            //FCNCMva_RunII_->AddVariable("dnn_score_0", &dnn_score_0_);
-            //FCNCMva_RunII_->AddVariable("dnn_score_1", &dnn_score_1_);
+            FCNC_BDTNRB_RunII_->AddVariable("m_ggj_", &m_ggj_);
+            FCNC_BDTNRB_RunII_->AddVariable("m_jjj_", &m_jjj_);
+            FCNC_BDTNRB_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
+
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_tbw_eta_", &chi2_tbw_eta_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_tbw_deltaR_dipho_", &chi2_tbw_deltaR_dipho_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_qjet_pt_", &chi2_qjet_pt_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_qjet_eta_", &chi2_qjet_eta_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_qjet_btag_", &chi2_qjet_btag_);
+
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_qjet_deltaR_dipho_", &chi2_qjet_deltaR_dipho_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_tqh_ptOverM_", &chi2_tqh_ptOverM_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
+
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_tbw_mass_", &chi2_3x3_tbw_mass_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_tbw_pt_", &chi2_3x3_tbw_pt_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_tbw_eta_", &chi2_3x3_tbw_eta_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_tbw_deltaR_dipho_", &chi2_3x3_tbw_deltaR_dipho_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_qjet_pt_", &chi2_3x3_qjet_pt_);
+
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_qjet_eta_", &chi2_3x3_qjet_eta_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_qjet_btag_", &chi2_3x3_qjet_btag_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_qjet_deltaR_dipho_", &chi2_3x3_qjet_deltaR_dipho_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_tqh_ptOverM_", &chi2_3x3_tqh_ptOverM_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_tqh_eta_", &chi2_3x3_tqh_eta_);
+
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_tqh_deltaR_tbw_", &chi2_3x3_tqh_deltaR_tbw_);
+            FCNC_BDTNRB_RunII_->AddVariable("chi2_3x3_tqh_deltaR_dipho_", &chi2_3x3_tqh_deltaR_dipho_);
+
+            FCNC_BDTSMH_RunII_->AddVariable("helicity_angle_", &helicity_angle_);
+            FCNC_BDTSMH_RunII_->AddVariable("dipho_pt_over_mass_", &diPhoPtoM_);
+            FCNC_BDTSMH_RunII_->AddVariable("met_", &MET_);
+            FCNC_BDTSMH_RunII_->AddVariable("dipho_rapidity_", &diPhoY_);
+            FCNC_BDTSMH_RunII_->AddVariable("dipho_cosphi_", &diPhoCosPhi_);
+
+            FCNC_BDTSMH_RunII_->AddVariable("subleadPSV_", &pho2_hasPixelSeed_);
+            FCNC_BDTSMH_RunII_->AddVariable("leadPSV_", &pho1_hasPixelSeed_);
+            FCNC_BDTSMH_RunII_->AddVariable("jet3_btag_", &btag_noBB_3_);
+            FCNC_BDTSMH_RunII_->AddVariable("jet3_eta_", &jetEta_3_);
+            FCNC_BDTSMH_RunII_->AddVariable("jet3_pt_", &jetPt_3_);
+
+            FCNC_BDTSMH_RunII_->AddVariable("jet2_btag_", &btag_noBB_2_);
+            FCNC_BDTSMH_RunII_->AddVariable("jet2_eta_", &jetEta_2_);
+            FCNC_BDTSMH_RunII_->AddVariable("jet2_pt_", &jetPt_2_);
+            FCNC_BDTSMH_RunII_->AddVariable("jet1_btag_", &btag_noBB_1_);
+            FCNC_BDTSMH_RunII_->AddVariable("jet1_eta_", &jetEta_1_);
+
+            FCNC_BDTSMH_RunII_->AddVariable("jet1_pt_", &jetPt_1_);
+            FCNC_BDTSMH_RunII_->AddVariable("sublead_eta_", &pho2_eta_);
+            FCNC_BDTSMH_RunII_->AddVariable("lead_eta_", &pho1_eta_);
+            FCNC_BDTSMH_RunII_->AddVariable("subleadptoM_", &pho2_ptoM_);
+            FCNC_BDTSMH_RunII_->AddVariable("leadptoM_", &pho1_ptoM_);
+
+            FCNC_BDTSMH_RunII_->AddVariable("ht_", &ht_);
+            FCNC_BDTSMH_RunII_->AddVariable("njets_", &nJets_);
+            FCNC_BDTSMH_RunII_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
+            FCNC_BDTSMH_RunII_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
+            FCNC_BDTSMH_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
+
+            FCNC_BDTSMH_RunII_->AddVariable("minIDMVA_", &minPhoID_);
+            FCNC_BDTSMH_RunII_->AddVariable("maxIDMVA_", &maxPhoID_);
+            FCNC_BDTSMH_RunII_->AddVariable("jet4_btag_", &btag_noBB_4_);
+            FCNC_BDTSMH_RunII_->AddVariable("jet4_eta_", &jetEta_4_);
+            FCNC_BDTSMH_RunII_->AddVariable("jet4_pt_", &jetPt_4_);
+
+            FCNC_BDTSMH_RunII_->AddVariable("m_ggj_", &m_ggj_);
+            FCNC_BDTSMH_RunII_->AddVariable("m_jjj_", &m_jjj_);
+            FCNC_BDTSMH_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
             
-            //------------------------------//
-            FCNCMva_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
-            FCNCMva_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
-            FCNCMva_RunII_->AddVariable("chi2_tbw_eta_", &chi2_tbw_eta_);
-            FCNCMva_RunII_->AddVariable("chi2_tbw_deltaR_dipho_", &chi2_tbw_deltaR_dipho_);
-            FCNCMva_RunII_->AddVariable("chi2_qjet_pt_", &chi2_qjet_pt_);
-            FCNCMva_RunII_->AddVariable("chi2_qjet_eta_", &chi2_qjet_eta_);
-            FCNCMva_RunII_->AddVariable("chi2_qjet_btag_", &chi2_qjet_btag_);
-            FCNCMva_RunII_->AddVariable("chi2_qjet_deltaR_dipho_", &chi2_qjet_deltaR_dipho_);
-            FCNCMva_RunII_->AddVariable("chi2_tqh_ptOverM_", &chi2_tqh_ptOverM_);
-            FCNCMva_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
-            FCNCMva_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
-            FCNCMva_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_tbw_mass_", &chi2_3x3_tbw_mass_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_tbw_pt_", &chi2_3x3_tbw_pt_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_tbw_eta_", &chi2_3x3_tbw_eta_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_tbw_deltaR_dipho_", &chi2_3x3_tbw_deltaR_dipho_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_qjet_pt_", &chi2_3x3_qjet_pt_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_qjet_eta_", &chi2_3x3_qjet_eta_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_qjet_btag_", &chi2_3x3_qjet_btag_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_qjet_deltaR_dipho_", &chi2_3x3_qjet_deltaR_dipho_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_tqh_ptOverM_", &chi2_3x3_tqh_ptOverM_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_tqh_eta_", &chi2_3x3_tqh_eta_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_tqh_deltaR_tbw_", &chi2_3x3_tqh_deltaR_tbw_);
-            FCNCMva_RunII_->AddVariable("chi2_3x3_tqh_deltaR_dipho_", &chi2_3x3_tqh_deltaR_dipho_);
-            //------------------------------//
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_tbw_eta_", &chi2_tbw_eta_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_tbw_deltaR_dipho_", &chi2_tbw_deltaR_dipho_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_qjet_pt_", &chi2_qjet_pt_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_qjet_eta_", &chi2_qjet_eta_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_qjet_btag_", &chi2_qjet_btag_);
             
-            FCNCMva_RunII_->AddVariable("m_ggj_", &m_ggj_); 
-            FCNCMva_RunII_->AddVariable("m_jjj_", &m_jjj_); 
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_qjet_deltaR_dipho_", &chi2_qjet_deltaR_dipho_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_tqh_ptOverM_", &chi2_tqh_ptOverM_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
             
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_tbw_mass_", &chi2_3x3_tbw_mass_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_tbw_pt_", &chi2_3x3_tbw_pt_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_tbw_eta_", &chi2_3x3_tbw_eta_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_tbw_deltaR_dipho_", &chi2_3x3_tbw_deltaR_dipho_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_qjet_pt_", &chi2_3x3_qjet_pt_);
             
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_qjet_eta_", &chi2_3x3_qjet_eta_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_qjet_btag_", &chi2_3x3_qjet_btag_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_qjet_deltaR_dipho_", &chi2_3x3_qjet_deltaR_dipho_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_tqh_ptOverM_", &chi2_3x3_tqh_ptOverM_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_tqh_eta_", &chi2_3x3_tqh_eta_);
+            
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_tqh_deltaR_tbw_", &chi2_3x3_tqh_deltaR_tbw_);
+            FCNC_BDTSMH_RunII_->AddVariable("chi2_3x3_tqh_deltaR_dipho_", &chi2_3x3_tqh_deltaR_dipho_);
+
             if (coupling_ == "Hut") {
-                std::cout << "Coupling selected as " << coupling_ << ", loading the following MVA: " << fcncHutMVAWeightFile_.fullPath() << std::endl;
-                FCNCMva_RunII_->BookMVA(_MVAMethod.c_str(), fcncHutMVAWeightFile_.fullPath());
+                std::cout << "Coupling selected as " << coupling_ << ", loading the following MVAs: " << fcncHutBDTNRBWeightFile_.fullPath() << ", " << fcncHutBDTSMHWeightFile_.fullPath() << std::endl;
+                FCNC_BDTNRB_RunII_->BookMVA(_MVAMethod.c_str(), fcncHutBDTNRBWeightFile_.fullPath());
+                FCNC_BDTSMH_RunII_->BookMVA(_MVAMethod.c_str(), fcncHutBDTSMHWeightFile_.fullPath());
+ 
             }
             else if (coupling_ == "Hct") {
-                std::cout << "Coupling selected as " << coupling_ << ", loading the following MVA: " << fcncHctMVAWeightFile_.fullPath()
-<< std::endl;
-                FCNCMva_RunII_->BookMVA(_MVAMethod.c_str(), fcncHctMVAWeightFile_.fullPath());
+                std::cout << "Coupling selected as " << coupling_ << ", loading the following MVAs: " << fcncHctBDTNRBWeightFile_.fullPath() << ", " << fcncHctBDTSMHWeightFile_.fullPath() << std::endl;
+                FCNC_BDTNRB_RunII_->BookMVA(_MVAMethod.c_str(), fcncHctBDTNRBWeightFile_.fullPath());
+                FCNC_BDTSMH_RunII_->BookMVA(_MVAMethod.c_str(), fcncHctBDTSMHWeightFile_.fullPath());
             }
  
         }       
@@ -679,11 +774,11 @@ namespace flashgg {
         if (useLargeMVAs) {
             topTagger = new BDT_resolvedTopTagger(topTaggerXMLfile_.fullPath());
 
-            dnn_dipho = new TTH_DNN_Helper(tthVsDiphoDNNfile_.fullPath());
-            dnn_ttGG  = new TTH_DNN_Helper(tthVsttGGDNNfile_.fullPath());
+            //dnn_dipho = new TTH_DNN_Helper(tthVsDiphoDNNfile_.fullPath());
+            //dnn_ttGG  = new TTH_DNN_Helper(tthVsttGGDNNfile_.fullPath());
 
-            dnn_dipho->SetInputShapes(18, 8, 8);
-            dnn_ttGG->SetInputShapes(18, 8, 8);
+            //dnn_dipho->SetInputShapes(18, 8, 8);
+            //dnn_ttGG->SetInputShapes(18, 8, 8);
         }
 
         for (unsigned i = 0 ; i < inputTagJets_.size() ; i++) {
@@ -707,6 +802,17 @@ namespace flashgg {
         int n;
         for( n = 0 ; n < ( int )boundaries.size() ; n++ ) {
             if( ( double )tthmvavalue > boundaries[boundaries.size() - n - 1] ) { return n; }
+        }
+        return -1; // Does not pass, object will not be produced
+    }
+
+    int FCNCHadronicTagProducer::chooseCategory( float fcnc_BDTNRB_val, float fcnc_BDTSMH_val )
+    {
+        // returns i if mva1 > boundaries1[i] && mva2 > boundaries2[i]
+        for (int i = 0; i < (int) boundaries_BDTNRB.size(); i ++) {
+            int idx = boundaries_BDTNRB.size() - (i + 1);
+            if ( fcnc_BDTNRB_val > boundaries_BDTNRB[idx] && fcnc_BDTSMH_val > boundaries_BDTSMH[idx] )
+                return i;
         }
         return -1; // Does not pass, object will not be produced
     }
@@ -1324,14 +1430,14 @@ namespace flashgg {
                   global_features[16] = secondMaxBTagVal_noBB_;
                   global_features[17] = nJets_;
 
-                  float dnn_score_dipho(0.5), dnn_score_ttGG(0.5);
-                  if (useLargeMVAs) {
-                      dnn_dipho->SetInputs(JetVect, global_features);
-                      dnn_score_dipho = dnn_dipho->EvaluateDNN();
+                  float dnn_score_dipho(-999), dnn_score_ttGG(-999);
+                  //if (useLargeMVAs) {
+                      //dnn_dipho->SetInputs(JetVect, global_features);
+                      //dnn_score_dipho = dnn_dipho->EvaluateDNN();
 
-                      dnn_ttGG->SetInputs(JetVect, global_features);
-                      dnn_score_ttGG = dnn_ttGG->EvaluateDNN();
-                  }
+                      //dnn_ttGG->SetInputs(JetVect, global_features);
+                      //dnn_score_ttGG = dnn_ttGG->EvaluateDNN();
+                  //}
 
 
                   TLorentzVector pho1, pho2;
@@ -1399,7 +1505,11 @@ namespace flashgg {
                   dnn_score_1_ = dnn_score_ttGG;
 
                   tthMvaVal_RunII_ = convert_tmva_to_prob(TThMva_RunII_->EvaluateMVA( _MVAMethod.c_str() ));
-                  fcncMvaVal_ = convert_tmva_to_prob(FCNCMva_RunII_->EvaluateMVA( _MVAMethod.c_str() ));
+                  //fcncMvaVal_ = convert_tmva_to_prob(FCNCMva_RunII_->EvaluateMVA( _MVAMethod.c_str() ));
+
+                  fcncMvaVal_NRB_ = convert_tmva_to_prob(FCNC_BDTNRB_RunII_->EvaluateMVA( _MVAMethod.c_str() ));
+                  fcncMvaVal_SMH_ = convert_tmva_to_prob(FCNC_BDTSMH_RunII_->EvaluateMVA( _MVAMethod.c_str() ));
+
                   if (debug_) {
                     cout << "TTH Hadronic Tag -- input MVA variables for Run II MVA: " << endl;
                     cout << "--------------------------------------------------------" << endl;
@@ -1469,17 +1579,16 @@ namespace flashgg {
                     cout << "m_ggj_: " << m_ggj_ << endl;
                     cout << "m_jjj_: " << m_jjj_ << endl;
 
-                    cout << "DNN Score 0: " << dnn_score_0_ << endl;
-                    cout << "DNN Score 1: " << dnn_score_1_ << endl;
                     cout << endl;
-                    cout << "BDT Score: " << fcncMvaVal_ << endl;
+                    cout << "BDT NRB Score: " << fcncMvaVal_NRB_ << endl;
+                    cout << "BDT SMH Score: " << fcncMvaVal_SMH_ << endl;
                   }
 
                   global_features.clear();
 
                 }
 
-                tthMvaVal_ = fcncMvaVal_;
+                //tthMvaVal_ = fcncMvaVal_;
                 //tthMvaVal_ = tthMvaVal_RunII_; // use Run II MVA
 
                 bool isTTHHadronicTagged = false;
@@ -1490,14 +1599,17 @@ namespace flashgg {
                     isTTHHadronicTagged = true;
                     
                 } else if ( useTTHHadronicMVA_  && njets_btagloose_ >= bjetsLooseNumberTTHHMVAThreshold_ && njets_btagmedium_ >= bjetsNumberTTHHMVAThreshold_ && jetcount_ >= jetsNumberTTHHMVAThreshold_ ) {
-                    //&& tthMvaVal_ >= tthHadMVAThresholdMin_  && tthMvaVal_ < tthHadMVAThresholdMax_ ) 
                     
-                    catnum = chooseCategory( tthMvaVal_ );                
-                    //                cout<<" catNum="<<catnum<<endl;
+                    catnum = chooseCategory( fcncMvaVal_NRB_, fcncMvaVal_SMH_ ); 
                     if(catnum>=0){
                         isTTHHadronicTagged = true;
-                        //                    cout<<" TAGGED "<< endl;
                     }
+                    if (debug_) {
+                        if (catnum >= 0)
+                            std::cout << "[FCNCHadronicTagProducer DEBUG] Event tagged (Category " << catnum << ", BDT-NRB score: " << fcncMvaVal_NRB_ << ", BDT-SMH score: " << fcncMvaVal_SMH_ << std::endl;
+                        else
+                            std::cout << "[FCNCHadronicTagProducer DEBUG] Event NOT tagged (BDT-NRB score: " << fcncMvaVal_NRB_ << ", BDT-SMH score: " << fcncMvaVal_SMH_ << std::endl;
+                    }                   
                 }
                 
                 if( isTTHHadronicTagged ) {

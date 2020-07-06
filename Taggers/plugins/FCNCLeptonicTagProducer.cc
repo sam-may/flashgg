@@ -50,6 +50,7 @@ namespace flashgg {
     private:
         void produce( Event &, const EventSetup & ) override;
         int  chooseCategory( float tthmvavalue , bool debug_ );
+        int  chooseCategory( float mva1_value, float mva2_value);
 
         const  reco::GenParticle* motherID(const reco::GenParticle* gp);
         bool PassFrixione(Handle<View<reco::GenParticle> > genParticles, const reco::GenParticle* gp, int nBinsForFrix, double cone_frix);
@@ -96,6 +97,14 @@ namespace flashgg {
         FileInPath fcncHutMVAWeightFile_;
         FileInPath fcncHctMVAWeightFile_;
 
+        unique_ptr<TMVA::Reader> FCNC_BDTNRB_RunII_;
+        FileInPath fcncHutBDTNRBWeightFile_;
+        FileInPath fcncHctBDTNRBWeightFile_;
+
+        unique_ptr<TMVA::Reader> FCNC_BDTSMH_RunII_;
+        FileInPath fcncHutBDTSMHWeightFile_;
+        FileInPath fcncHctBDTSMHWeightFile_;
+
         FileInPath tthVsttGGDNNfile_;
 
         //Thresholds
@@ -121,7 +130,11 @@ namespace flashgg {
 
         double leadPhoOverMassThreshold_;
         double subleadPhoOverMassThreshold_;
+
         vector<double> MVAThreshold_;
+        vector<double> MVAThreshold_BDTNRB;
+        vector<double> MVAThreshold_BDTSMH;    
+
         double deltaRJetLeadPhoThreshold_;
         double deltaRJetSubLeadPhoThreshold_;
         double jetsNumberThreshold_;
@@ -205,7 +218,10 @@ namespace flashgg {
         float dnn_score_0_;
        
         float tthMvaVal_RunII_;
+
         float fcncMvaVal_;
+        float fcncMvaVal_NRB_;
+        float fcncMvaVal_SMH_;
 
         //------------------------------//
         float chi2_neutrino_pz_;
@@ -494,10 +510,16 @@ namespace flashgg {
 
         leadPhoOverMassThreshold_ = iConfig.getParameter<double>( "leadPhoOverMassThreshold");
         subleadPhoOverMassThreshold_ = iConfig.getParameter<double>( "subleadPhoOverMassThreshold");
-        if (coupling_ == "Hut")
+        if (coupling_ == "Hut") {
             MVAThreshold_ = iConfig.getParameter<std::vector<double>>( "MVAThresholdHut");
-        else if (coupling_ == "Hct")
+            MVAThreshold_BDTNRB = iConfig.getParameter<std::vector<double>>( "MVAThresholdHutNRB");
+            MVAThreshold_BDTSMH = iConfig.getParameter<std::vector<double>>( "MVAThresholdHutSMH");
+        }
+        else if (coupling_ == "Hct") {
             MVAThreshold_ = iConfig.getParameter<std::vector<double>>( "MVAThresholdHct");
+            MVAThreshold_BDTNRB = iConfig.getParameter<std::vector<double>>( "MVAThresholdHctNRB");
+            MVAThreshold_BDTSMH = iConfig.getParameter<std::vector<double>>( "MVAThresholdHctSMH");
+        }
         PhoMVAThreshold_ = iConfig.getParameter<double>( "PhoMVAThreshold");
         jetsNumberThreshold_ = iConfig.getParameter<double>( "jetsNumberThreshold");
         bjetsNumberThreshold_ = iConfig.getParameter<double>( "bjetsNumberThreshold");
@@ -545,6 +567,10 @@ namespace flashgg {
         fcncHutMVAWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHutMVAWeightFile" );
         fcncHctMVAWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHctMVAWeightFile" );
     
+        fcncHutBDTNRBWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHutBDTNRBAWeightFile" );
+        fcncHctBDTNRBWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHctBDTNRBAWeightFile" );
+        fcncHutBDTSMHWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHutBDTSMHAWeightFile" );
+        fcncHctBDTSMHWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHctBDTSMHAWeightFile" ); 
 
         DiphotonMva_.reset( new TMVA::Reader( "!Color:Silent" ) );
         DiphotonMva_->AddVariable( "dipho_leadEta", &leadeta_ );
@@ -617,78 +643,132 @@ namespace flashgg {
          
         TThMva_RunII_->BookMVA( "BDT" , tthMVA_RunII_weightfile_.fullPath());     
 
-        FCNCMva_.reset( new TMVA::Reader( "!Color:Silent" ) );
+        FCNC_BDTNRB_RunII_.reset( new TMVA::Reader( "!Color:Silent" ) );
 
-        FCNCMva_->AddVariable("maxIDMVA_", &maxPhoID_);
-        FCNCMva_->AddVariable("minIDMVA_", &minPhoID_);
-        FCNCMva_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
-        FCNCMva_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
-        FCNCMva_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
-        FCNCMva_->AddVariable("njets_", &nJets_);
-        FCNCMva_->AddVariable("ht_", &ht_);
-        FCNCMva_->AddVariable("leadptoM_", &leadptom_);
-        FCNCMva_->AddVariable("subleadptoM_", &subleadptom_);
-        FCNCMva_->AddVariable("lead_eta_", &leadeta_);
-        FCNCMva_->AddVariable("sublead_eta_", &subleadeta_);
+        FCNC_BDTNRB_RunII_->AddVariable("helicity_angle_", &helicity_angle_);
+        FCNC_BDTNRB_RunII_->AddVariable("dipho_pt_over_mass_", &diPhoPtoM_);
+        FCNC_BDTNRB_RunII_->AddVariable("met_", &MetPt_);
+        FCNC_BDTNRB_RunII_->AddVariable("dipho_rapidity_", &diPhoY_);
+        FCNC_BDTNRB_RunII_->AddVariable("dipho_cosphi_", &diPhoCosPhi_);
 
-        FCNCMva_->AddVariable("jet1_pt_", &jetPt_1_);
-        FCNCMva_->AddVariable("jet1_eta_", &jetEta_1_);
-        FCNCMva_->AddVariable("jet1_btag_", &btag_noBB_1_);
-        FCNCMva_->AddVariable("jet2_pt_", &jetPt_2_);
-        FCNCMva_->AddVariable("jet2_eta_", &jetEta_2_);
-        FCNCMva_->AddVariable("jet2_btag_", &btag_noBB_2_);
-        FCNCMva_->AddVariable("jet3_pt_", &jetPt_3_);
-        FCNCMva_->AddVariable("jet3_eta_", &jetEta_3_);
-        FCNCMva_->AddVariable("jet3_btag_", &btag_noBB_3_);
-        FCNCMva_->AddVariable("jet4_pt_", &jetPt_4_);
-        FCNCMva_->AddVariable("jet4_eta_", &jetEta_4_);
-        FCNCMva_->AddVariable("jet4_btag_", &btag_noBB_4_);
+        FCNC_BDTNRB_RunII_->AddVariable("subleadPSV_", &subleadPSV_);
+        FCNC_BDTNRB_RunII_->AddVariable("leadPSV_", &leadPSV_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet3_btag_", &btag_noBB_3_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet3_eta_", &jetEta_3_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet3_pt_", &jetPt_3_);
 
-        FCNCMva_->AddVariable("leadPSV_", &leadPSV_);
-        FCNCMva_->AddVariable("subleadPSV_", &subleadPSV_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet2_btag_", &btag_noBB_2_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet2_eta_", &jetEta_2_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet2_pt_", &jetPt_2_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet1_btag_", &btag_noBB_1_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet1_eta_", &jetEta_1_);
 
-        FCNCMva_->AddVariable("dipho_cosphi_", &diPhoCosPhi_);
-        FCNCMva_->AddVariable("dipho_rapidity_", &diPhoY_);
-        FCNCMva_->AddVariable("met_", &MetPt_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet1_pt_", &jetPt_1_);
+        FCNC_BDTNRB_RunII_->AddVariable("sublead_eta_", &subleadeta_);
+        FCNC_BDTNRB_RunII_->AddVariable("lead_eta_", &leadeta_);
+        FCNC_BDTNRB_RunII_->AddVariable("subleadptoM_", &subleadptom_);
+        FCNC_BDTNRB_RunII_->AddVariable("leadptoM_", &leadptom_);
 
-        FCNCMva_->AddVariable("dipho_pt_over_mass_", &diPhoPtoM_);
+        FCNC_BDTNRB_RunII_->AddVariable("ht_", &ht_);
+        FCNC_BDTNRB_RunII_->AddVariable("njets_", &nJets_);
+        FCNC_BDTNRB_RunII_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
+        FCNC_BDTNRB_RunII_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
+        FCNC_BDTNRB_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
 
-        FCNCMva_->AddVariable("helicity_angle_", &helicity_angle_);
-        FCNCMva_->AddVariable("top_tag_score_", &top_tag_score_);
-        //------------------------------//
-        FCNCMva_->AddVariable("chi2_neutrino_pz_", &chi2_neutrino_pz_);
-        FCNCMva_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
-        FCNCMva_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
-        FCNCMva_->AddVariable("chi2_tbw_eta_", &chi2_tbw_eta_);
-        FCNCMva_->AddVariable("chi2_tbw_deltaR_dipho_", &chi2_tbw_deltaR_dipho_);
-        FCNCMva_->AddVariable("chi2_qjet_pt_", &chi2_qjet_pt_);
-        FCNCMva_->AddVariable("chi2_qjet_eta_", &chi2_qjet_eta_);
-        FCNCMva_->AddVariable("chi2_qjet_btag_", &chi2_qjet_btag_);
-        FCNCMva_->AddVariable("chi2_qjet_deltaR_dipho_", &chi2_qjet_deltaR_dipho_);
-        FCNCMva_->AddVariable("chi2_tqh_ptOverM_", &chi2_tqh_ptOverM_);
-        FCNCMva_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
-        FCNCMva_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
-        FCNCMva_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
-        //------------------------------//
-        FCNCMva_->AddVariable("lep_pt_", &lepton_leadPt_);
-        FCNCMva_->AddVariable("lep_eta_", &lepton_leadEta_);
-        FCNCMva_->AddVariable("n_lep_tight_", &lepton_nTight_);
+        FCNC_BDTNRB_RunII_->AddVariable("minIDMVA_", &minPhoID_);
+        FCNC_BDTNRB_RunII_->AddVariable("maxIDMVA_", &maxPhoID_);        
+        FCNC_BDTNRB_RunII_->AddVariable("lep_pt_", &lepton_leadPt_);
+        FCNC_BDTNRB_RunII_->AddVariable("lep_eta_", &lepton_leadEta_);
+        FCNC_BDTNRB_RunII_->AddVariable("n_lep_tight_", &lepton_nTight_);
+
+        FCNC_BDTNRB_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_neutrino_pz_", &chi2_neutrino_pz_);
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_tbw_eta_", &chi2_tbw_eta_);
+
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_tbw_deltaR_dipho_", &chi2_tbw_deltaR_dipho_);
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_qjet_pt_", &chi2_qjet_pt_);
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_qjet_eta_", &chi2_qjet_eta_);
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_qjet_btag_", &chi2_qjet_btag_);
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_qjet_deltaR_dipho_", &chi2_qjet_deltaR_dipho_);
+
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_tqh_ptOverM_", &chi2_tqh_ptOverM_);
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
+        FCNC_BDTNRB_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
+
+        FCNC_BDTSMH_RunII_.reset( new TMVA::Reader( "!Color:Silent" ) );
+
+        FCNC_BDTSMH_RunII_->AddVariable("helicity_angle_", &helicity_angle_);
+        FCNC_BDTSMH_RunII_->AddVariable("dipho_pt_over_mass_", &diPhoPtoM_);
+        FCNC_BDTSMH_RunII_->AddVariable("met_", &MetPt_);
+        FCNC_BDTSMH_RunII_->AddVariable("dipho_rapidity_", &diPhoY_);
+        FCNC_BDTSMH_RunII_->AddVariable("dipho_cosphi_", &diPhoCosPhi_);
+
+        FCNC_BDTSMH_RunII_->AddVariable("subleadPSV_", &subleadPSV_);
+        FCNC_BDTSMH_RunII_->AddVariable("leadPSV_", &leadPSV_);
+        FCNC_BDTSMH_RunII_->AddVariable("jet3_btag_", &btag_noBB_3_);
+        FCNC_BDTSMH_RunII_->AddVariable("jet3_eta_", &jetEta_3_);
+        FCNC_BDTSMH_RunII_->AddVariable("jet3_pt_", &jetPt_3_);
+
+        FCNC_BDTSMH_RunII_->AddVariable("jet2_btag_", &btag_noBB_2_);
+        FCNC_BDTSMH_RunII_->AddVariable("jet2_eta_", &jetEta_2_);
+        FCNC_BDTSMH_RunII_->AddVariable("jet2_pt_", &jetPt_2_);
+        FCNC_BDTSMH_RunII_->AddVariable("jet1_btag_", &btag_noBB_1_);
+        FCNC_BDTSMH_RunII_->AddVariable("jet1_eta_", &jetEta_1_);
+
+        FCNC_BDTSMH_RunII_->AddVariable("jet1_pt_", &jetPt_1_);
+        FCNC_BDTSMH_RunII_->AddVariable("sublead_eta_", &subleadeta_);
+        FCNC_BDTSMH_RunII_->AddVariable("lead_eta_", &leadeta_);
+        FCNC_BDTSMH_RunII_->AddVariable("subleadptoM_", &subleadptom_);
+        FCNC_BDTSMH_RunII_->AddVariable("leadptoM_", &leadptom_);
+
+        FCNC_BDTSMH_RunII_->AddVariable("ht_", &ht_);
+        FCNC_BDTSMH_RunII_->AddVariable("njets_", &nJets_);
+        FCNC_BDTSMH_RunII_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
+        FCNC_BDTSMH_RunII_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
+        FCNC_BDTSMH_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
+
+        FCNC_BDTSMH_RunII_->AddVariable("minIDMVA_", &minPhoID_);
+        FCNC_BDTSMH_RunII_->AddVariable("maxIDMVA_", &maxPhoID_);
+        FCNC_BDTSMH_RunII_->AddVariable("lep_pt_", &lepton_leadPt_);
+        FCNC_BDTSMH_RunII_->AddVariable("lep_eta_", &lepton_leadEta_);
+        FCNC_BDTSMH_RunII_->AddVariable("n_lep_tight_", &lepton_nTight_);
+
+        FCNC_BDTSMH_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_neutrino_pz_", &chi2_neutrino_pz_);
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_tbw_eta_", &chi2_tbw_eta_);
+
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_tbw_deltaR_dipho_", &chi2_tbw_deltaR_dipho_);
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_qjet_pt_", &chi2_qjet_pt_);
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_qjet_eta_", &chi2_qjet_eta_);
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_qjet_btag_", &chi2_qjet_btag_);
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_qjet_deltaR_dipho_", &chi2_qjet_deltaR_dipho_);
+
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_tqh_ptOverM_", &chi2_tqh_ptOverM_);
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
+        FCNC_BDTSMH_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
 
         if (coupling_ == "Hut") {
-            std::cout << "Coupling selected as " << coupling_ << ", loading the following MVA: " << fcncHutMVAWeightFile_.fullPath() << std::endl;
-            FCNCMva_->BookMVA( "BDT" , fcncHutMVAWeightFile_.fullPath());
+            std::cout << "Coupling selected as " << coupling_ << ", loading the following MVAs: " << fcncHutBDTNRBWeightFile_.fullPath() << ", " << fcncHutBDTSMHWeightFile_.fullPath() << std::endl;
+            FCNC_BDTNRB_RunII_->BookMVA( "BDT" , fcncHutBDTNRBWeightFile_.fullPath());
+            FCNC_BDTSMH_RunII_->BookMVA( "BDT" , fcncHutBDTSMHWeightFile_.fullPath());
         }
         else if (coupling_ == "Hct") {
-            std::cout << "Coupling selected as " << coupling_ << ", loading the following MVA: " << fcncHctMVAWeightFile_.fullPath()
-<< std::endl;
-            FCNCMva_->BookMVA( "BDT" , fcncHctMVAWeightFile_.fullPath());
+            std::cout << "Coupling selected as " << coupling_ << ", loading the following MVAs: " << fcncHctBDTNRBWeightFile_.fullPath() << ", " << fcncHctBDTSMHWeightFile_.fullPath() << std::endl;
+            FCNC_BDTNRB_RunII_->BookMVA( "BDT" , fcncHctBDTNRBWeightFile_.fullPath());
+            FCNC_BDTSMH_RunII_->BookMVA( "BDT" , fcncHctBDTSMHWeightFile_.fullPath());
         }
   
 
         if (useLargeMVAs) {
             topTagger = new BDT_resolvedTopTagger(topTaggerXMLfile_.fullPath());
-            dnn = new TTH_DNN_Helper(tthVsttGGDNNfile_.fullPath());
-            dnn->SetInputShapes(19, 9, 8);
+            //dnn = new TTH_DNN_Helper(tthVsttGGDNNfile_.fullPath());
+            //dnn->SetInputShapes(19, 9, 8);
         }
 
         for (unsigned i = 0 ; i < inputTagJets_.size() ; i++) {
@@ -724,6 +804,16 @@ namespace flashgg {
         return -1; // Does not pass, object will not be produced
     }
 
+    int FCNCLeptonicTagProducer::chooseCategory( float mva1_value, float mva2_value)
+    {
+        // returns i if mva1 > boundaries1[i] && mva2 > boundaries2[i]
+        for (int i = 0; i < (int) MVAThreshold_BDTNRB.size(); i ++) {
+            int idx = MVAThreshold_BDTNRB.size() - (i + 1);
+            if ( mva1_value > MVAThreshold_BDTNRB[idx] && mva2_value > MVAThreshold_BDTSMH[idx] )
+                return i;
+        }
+        return -1; // Does not pass, object will not be produced
+    }
     void FCNCLeptonicTagProducer::produce( Event &evt, const EventSetup & )
     {
         //Handle<View<flashgg::Jet> > theJets;
@@ -1305,8 +1395,9 @@ namespace flashgg {
                 global_features[18] = lepton_nTight_;
 
                 if (useLargeMVAs) {
-                    dnn->SetInputs(tagJets, Muons, Electrons, global_features);
-                    dnn_score_0_ = dnn->EvaluateDNN();
+                    //dnn->SetInputs(tagJets, Muons, Electrons, global_features);
+                    //dnn_score_0_ = dnn->EvaluateDNN();
+                    dnn_score_0_ = -999;
                 }
 
                 vector<float> mvaEval; 
@@ -1405,7 +1496,11 @@ namespace flashgg {
                 float mvaValue = DiphotonMva_-> EvaluateMVA( "BDT" );
 
                 tthMvaVal_RunII_ = convert_tmva_to_prob(TThMva_RunII_->EvaluateMVA( "BDT" ));
-                fcncMvaVal_ = convert_tmva_to_prob(FCNCMva_->EvaluateMVA( "BDT" ));
+                //fcncMvaVal_ = convert_tmva_to_prob(FCNCMva_->EvaluateMVA( "BDT" ));
+
+                fcncMvaVal_NRB_ = convert_tmva_to_prob(FCNC_BDTNRB_RunII_->EvaluateMVA( "BDT" ));
+                fcncMvaVal_SMH_ = convert_tmva_to_prob(FCNC_BDTSMH_RunII_->EvaluateMVA( "BDT" ));
+
                 if (debug_) {
                   cout << "TTH Leptonic Tag -- input MVA variables for Run II MVA: " << endl;
                   cout << "--------------------------------------------------------" << endl;
@@ -1466,57 +1561,27 @@ namespace flashgg {
 
                   cout << "DNN Score 0: " << dnn_score_0_ << endl;
                   cout << endl;
-                  cout << "BDT Score: " << fcncMvaVal_ << endl;
+                  
+                  cout << "BDT NRB Score: " << fcncMvaVal_NRB_ << endl;
+                  cout << "BDT SMH Score: " << fcncMvaVal_SMH_ << endl;
+
               }
 
               global_features.clear();
 
-              mvaValue = fcncMvaVal_;
+              //mvaValue = fcncMvaVal_;
               //mvaValue = tthMvaVal_RunII_; // use Run II MVA for categorization
 
                 int catNumber = -1;
-                catNumber = chooseCategory( mvaValue , debug_);  
+                //catNumber = chooseCategory( mvaValue , debug_);  
+                catNumber = chooseCategory( fcncMvaVal_NRB_ , fcncMvaVal_SMH_ );
 
-                if(debug_)
-                    cout << "I'm going to check selections, mva value: " << mvaValue << endl;
-
-                // Disable splitting of single lepton and dilepton events: new optimimization of signal regions considers them together
-                /*
-                if(SplitDiLeptEv_ && lepPt.size()>1 && njet_ >= DiLeptonJetThreshold_ && njets_btagmedium_ >= DiLeptonbJetThreshold_ && mvaValue > DiLeptonMVAThreshold_ ) 
-                // Check DiLepton selection and assigne to purest cat if splitting is True
-                {    catNumber = 0;
-                     if(debug_)
-                        cout << "DiLepton event with: " << njet_ << "jets, (threshold " << DiLeptonJetThreshold_ << ") " << njets_btagmedium_ << " bjets, (threshold " << DiLeptonbJetThreshold_  << ")" << mvaValue << " mva (threshold " << DiLeptonMVAThreshold_ << endl;
-
-                }
-                
-                else if(lepPt.size()==1 && njet_ >= jetsNumberThreshold_ && njets_btagmedium_ >= bjetsNumberThreshold_) 
-                // Check single lepton selections
-                {    catNumber = chooseCategory( mvaValue, debug_ );  
-                   if(debug_)
-                        cout << "Single lepton event with: "<< njet_ << " jets, (threshold " << DiLeptonJetThreshold_ << ") " << njets_btagmedium_ << " bjets, (threshold " << DiLeptonbJetThreshold_  << ")" << mvaValue << " mva (thresholds "  << endl;
-                }
-                */
-
-                if(debug_)
-                { 
-                    cout << "TTHLeptonicTag -- MVA iput variables: " << endl;
-                    cout << "--------------------------------------" << endl;
-                    cout << "Lead and sublead photon eta " << leadeta_ << " " << subleadeta_ << endl;
-                    cout << "Lead and sublead photon pt/m " << leadptom_ << " " << subleadptom_ << endl;
-                    cout << "Lead and sublead photon IdMVA " << leadIDMVA_ << " " << subleadIDMVA_ << endl;
-                    cout << "Lead and sublead photon PSV " << leadPSV_ << " " << subleadPSV_ << endl;
-                    cout << "Photon delta phi " << deltaphi_ << endl;
-                    cout << "Number of jets " << nJets_ << endl;
-                    cout << "Number of b-jets " << nJets_bTagMedium_  << endl;
-                    cout << "Pt of the three leading jets " << jet_pt1_ << " " << jet_pt2_ << " " << jet_pt3_ << endl;
-                    cout << "Eta of the three leading jets " << jet_eta1_ << " " << jet_eta2_ << " " << jet_eta3_ << endl;
-                    cout << "Two highest bTag scores " << bTag1_ << " " << bTag2_ << endl;
-                    cout << "MetPt " << MetPt_ << endl;
-                    cout << "Lepton pT and Eta " << lepton_leadPt_ << " " << lepton_leadEta_ << endl;
-                    cout << "--------------------------------------" << endl;
-                    cout << "TTHLeptonicTag -- output MVA value " << mvaValue << " " << DiphotonMva_-> EvaluateMVA( "BDT" ) << ", category " << catNumber << endl;
-                }
+                if (debug_) {
+                        if (catNumber >= 0)
+                            std::cout << "[FCNCLeptonicTagProducer DEBUG] Event tagged (Category " << catNumber << ", BDT-NRB score: " << fcncMvaVal_NRB_ << ", BDT-SMH score: " << fcncMvaVal_SMH_ << std::endl;
+                        else
+                            std::cout << "[FCNCLeptonicTagProducer DEBUG] Event NOT tagged (BDT-NRB score: " << fcncMvaVal_NRB_ << ", BDT-SMH score: " << fcncMvaVal_SMH_ << std::endl;
+                 }                   
 
                 if(catNumber!=-1)
                 {

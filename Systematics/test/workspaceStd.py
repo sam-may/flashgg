@@ -479,8 +479,8 @@ if customize.tthTagsOnly:
         ]
 elif customize.fcncHutTagsOnly or customize.fcncHctTagsOnly:
     tagList=[
-        ["FCNCHadronicTag",2],
-        ["FCNCLeptonicTag",2]
+        ["FCNCHadronicTag",4],
+        ["FCNCLeptonicTag",4]
         ]
 elif customize.doubleHTagsOnly:
     tagList = hhc.tagList

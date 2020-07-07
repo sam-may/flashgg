@@ -14,7 +14,7 @@ parser.add_argument("--date", help = "date to distinguish this submission", type
 parser.add_argument("--procs", help = "csv list of types of processes to submit", type=str, default = "sig,data,zh,fcnc")
 parser.add_argument("--couplings", help = "csv list of couplings", type=str, default = "Hct,Hut")
 parser.add_argument("--dry_run", help = "don't actually make tarball or submit", action="store_true")
-parser.add_argument("--fcnc_wildcard", help = "wildcard to grab all fcnc samples", default = "/hadoop/cms/store/user/smay/ttH/MicroAOD/RunII/*FCNC*")
+parser.add_argument("--fcnc_wildcard", help = "wildcard to grab all fcnc samples", default = "/hadoop/cms/store/user/smay/FCNC/MicroAOD/*microAOD_v1.2_29May2020*/")
 parser.add_argument("--fcnc_only", help = "only run on fcnc locally", action="store_true")
 parser.add_argument("--save_tar", help = "don't remake tarball", action="store_true")
 parser.add_argument("--no_syst", help = "don't run systematics", action="store_true")
@@ -109,18 +109,59 @@ for dataset in datasets.keys():
     for proc in procs:
         datasets[dataset][proc] = {}
 
-# Use 2017 FCNC for all 3 years for now
-for dataset in [dir for dir in glob.glob(args.fcnc_wildcard) if "RunIIFall17MiniAODv2" in dir]:
-    sample = dataset.split("/")[-1]
-    for year in years:
-        datasets[year]["fcnc"][sample] = { "input_loc" : dataset } 
-        normalizationInfo = ""
-        for smp in samples.keys():
-            if smp in sample: # take this as a match
-                normalizationInfo = " normalizationInfo=%.6f,%.6f " % (samples[smp]["xs"], (samples[smp]["xs"]*1000.) / samples[smp]["2017"]["scale1fb"])
-                #print "Matched %s to %s, setting normalizationInfo as %s" % (sample, smp, normalizationInfo)
-                datasets[year]["fcnc"][sample]["args"] = normalizationInfo
-                datasets[year]["fcnc"][sample]["year"] = year
+fcnc_map = {
+    "FCNC_private_ST_HAD_HCT_2016_microAOD_v1.2_29May2020" : ("ST_HAD_HCT_2016_20200522_v1_STEP4_v1", "2016"),
+    "TT_FCNC-TtoHJ_aTleptonic_HToaa_eta_hut_TuneCP5-MadGraph5-pythia8_RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-TtoHJ_aTleptonic_HToaa_eta_hut_TuneCP5-MadGraph5-pythia8", "2018"),
+    "TT_FCNC-T2HJ_aTleptonic_HToaa_eta_hct_TuneCP5-MadGraph5-pythia8_RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-T2HJ_aTleptonic_HToaa_eta_hct_TuneCP5-MadGraph5-pythia8", "2018"),
+    "TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hct_TuneCP5-MadGraph5-pythia8_RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hct_TuneCP5-MadGraph5-pythia8", "2018"),
+    "TT_FCNC-TtoHJ_aTleptonic_HToaa_eta_hut-MadGraph5-pythia8_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-TtoHJ_aTleptonic_HToaa_eta_hut-MadGraph5-pythia8", "2016"),
+    "ST_FCNC-TH_Tleptonic_HToaa_eta_hct-MadGraph5-pythia8_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("ST_FCNC-TH_Tleptonic_HToaa_eta_hct-MadGraph5-pythia8", "2016"),
+    "TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hut-MadGraph5-pythia8_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hut-MadGraph5-pythia8", "2016"),
+    "ST_FCNC-TH_Tleptonic_HToaa_eta_hut-MadGraph5-pythia8_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2_MINIAODSIM_microAOD_v1.2_29May2020" : ("ST_FCNC-TH_Tleptonic_HToaa_eta_hut-MadGraph5-pythia8", "2016"),
+    "TT_FCNC-TtoHJ_aTleptonic_HToaa_eta_hut_TuneCP5-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_tauDecays_94X_mc2017_realistic_v14-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-TtoHJ_aTleptonic_HToaa_eta_hut_TuneCP5-MadGraph5-pythia8", "2017"),
+    "TT_FCNC-aTtoHJ_Thadronic_HToaa_eta_hct-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v3_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-aTtoHJ_Thadronic_HToaa_eta_hct-MadGraph5-pythia8", "2017"),
+    "TT_FCNC-T2HJ_aThadronic_HToaa_eta_hct-MadGraph5-pythia8_TuneCUETP8M1_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-T2HJ_aThadronic_HToaa_eta_hct-MadGraph5-pythia8_TuneCUETP8M1", "2016"),
+    "TT_FCNC-TtoHJ_aThadronic_HToaa_eta_hut-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v3_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-TtoHJ_aThadronic_HToaa_eta_hut-MadGraph5-pythia8", "2017"),
+    "TT_FCNC-T2HJ_aTleptonic_HToaa_eta_hct_TuneCP5-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_tauDecays_94X_mc2017_realistic_v14-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-T2HJ_aTleptonic_HToaa_eta_hct_TuneCP5-MadGraph5-pythia8", "2017"),
+    "ST_FCNC-TH_Thadronic_HToaa_eta_hct-MadGraph5-pythia8_RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("ST_FCNC-TH_Thadronic_HToaa_eta_hct-MadGraph5-pythia8", "2018"),
+    "TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hut_TuneCP5-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_tauDecays_94X_mc2017_realistic_v14-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hut_TuneCP5-MadGraph5-pythia8", "2017"),
+    "TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hut_TuneCP5-MadGraph5-pythia8_RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hut_TuneCP5-MadGraph5-pythia8", "2018"),
+    "TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hct_TuneCP5-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_tauDecays_94X_mc2017_realistic_v14-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hct_TuneCP5-MadGraph5-pythia8", "2017"),
+    "TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hct-MadGraph5-pythia8_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hct-MadGraph5-pythia8", "2016"),
+    "TT_FCNC-aTtoHJ_Thadronic_HToaa_eta_hut-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-aTtoHJ_Thadronic_HToaa_eta_hut-MadGraph5-pythia8", "2017"),
+    "TT_FCNC-aTtoHJ_Thadronic_HToaa_eta_hct-MadGraph5-pythia8_TuneCUETP8M1_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-aTtoHJ_Thadronic_HToaa_eta_hct-MadGraph5-pythia8_TuneCUETP8M1", "2016"),
+    "TT_FCNC-TtoHJ_aThadronic_HToaa_eta_hct-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-TtoHJ_aThadronic_HToaa_eta_hct-MadGraph5-pythia8", "2017"),
+    "TT_FCNC-T2HJ_aTleptonic_HToaa_eta_hct-MadGraph5-pythia8_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-T2HJ_aTleptonic_HToaa_eta_hct-MadGraph5-pythia8", "2016"),
+    "ST_FCNC-TH_Tleptonic_HToaa_eta_hut-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_tauDecays_94X_mc2017_realistic_v14-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("ST_FCNC-TH_Tleptonic_HToaa_eta_hut-MadGraph5-pythia8", "2017"),
+    "ST_FCNC-TH_Tleptonic_HToaa_eta_hut-MadGraph5-pythia8_RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("ST_FCNC-TH_Tleptonic_HToaa_eta_hut-MadGraph5-pythia8", "2018"),
+    "ST_FCNC-TH_Thadronic_HToaa_eta_hct-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_tauDecays_94X_mc2017_realistic_v14-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("ST_FCNC-TH_Thadronic_HToaa_eta_hct-MadGraph5-pythia8", "2017"),
+    "ST_FCNC-TH_Tleptonic_HToaa_eta_hct-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_tauDecays_94X_mc2017_realistic_v14-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("ST_FCNC-TH_Tleptonic_HToaa_eta_hct-MadGraph5-pythia8", "2017"),
+    "ST_FCNC-TH_Tleptonic_HToaa_eta_hct-MadGraph5-pythia8_RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("ST_FCNC-TH_Tleptonic_HToaa_eta_hct-MadGraph5-pythia8", "2018"),
+    "ST_FCNC-TH_Thadronic_HToaa_eta_hut-MadGraph5-pythia8_RunIIFall17MiniAODv2-PU2017_12Apr2018_tauDecays_94X_mc2017_realistic_v14-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("ST_FCNC-TH_Thadronic_HToaa_eta_hut-MadGraph5-pythia8", "2017"),
+    "FCNC_private_TT_T2HJ_HAD_HUT_2018_microAOD_v1.2_29May2020" : ("TT_T2HJ_HAD_HUT_2018_20200522_v1_STEP4_v1", "2018"),
+    "FCNC_private_TT_T2HJ_HAD_HCT_2018_microAOD_v1.2_29May2020" : ("TT_T2HJ_HAD_HCT_2018_20200522_v1_STEP4_v1", "2018"),
+    "FCNC_private_ST_HAD_HUT_2016_microAOD_v1.2_29May2020" : ("ST_HAD_HUT_2016_20200522_v1_STEP4_v1", "2016"),
+    "FCNC_private_TT_aT2HJ_HAD_HUT_2018_microAOD_v1.2_29May2020" : ("TT_aT2HJ_HAD_HUT_2018_20200522_v1_STEP4_v1", "2018"),
+    "FCNC_private_TT_aT2HJ_HAD_HCT_2018_microAOD_v1.2_29May2020" : ("TT_aT2HJ_HAD_HCT_2018_20200522_v1_STEP4_v1", "2018"),
+    "TT_FCNC-TtoHJ_aThadronic_HToaa_eta_hut-MadGraph5-pythia8_TuneCUETP8M1_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-TtoHJ_aThadronic_HToaa_eta_hut-MadGraph5-pythia8_TuneCUETP8M1", "2016"),
+    "TT_FCNC-aTtoHJ_Thadronic_HToaa_eta_hut-MadGraph5-pythia8_TuneCUETP8M1_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("TT_FCNC-aTtoHJ_Thadronic_HToaa_eta_hut-MadGraph5-pythia8_TuneCUETP8M1", "2016"),
+    "ST_FCNC-TH_Thadronic_HToaa_eta_hut-MadGraph5-pythia8_RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1_MINIAODSIM_microAOD_v1.2_29May2020" : ("ST_FCNC-TH_Thadronic_HToaa_eta_hut-MadGraph5-pythia8", "2018")
+}
+
+for dataset in [dir for dir in glob.glob(args.fcnc_wildcard) if "FCNC" in dir]:
+    sample = dataset.split("/")[-2] # assumes a trailing "/"
+    smp_match, year = fcnc_map[sample]
+
+    print dataset, smp_match, year
+
+    datasets[year]["fcnc"][sample] = { "input_loc" : dataset }
+
+    normalizationInfo = ""
+    split_factor = 3.0
+
+    normalizationInfo = " normalizationInfo=%.6f,%.6f splitFactor=%.1f" % (samples[smp_match]["xs"], (samples[smp_match]["xs"]*1000.) / samples[smp_match][year]["scale1fb"], split_factor)
+    datasets[year]["fcnc"][sample]["args"] = normalizationInfo
+    datasets[year]["fcnc"][sample]["year"] = year
 
 for year in years:
     for proc in procs:
@@ -134,6 +175,9 @@ for year in years:
             sample_name = info[0].split("/")[1]
             catalog_name = info[0]
             cmdLine = datasets_to_add["cmdLine"]
+            if "120" in sample or "125" in sample or "130" in sample:
+                split_factor = 2.0
+                cmdLine += " splitFactor=%.1f" % split_factor # multiply SM Higgs by 2 to account for optimization / final fit splits
             if sample_name in samples.keys():
                 xs = samples[sample_name]["xs"]
 
@@ -252,7 +296,7 @@ for coupling, info in couplings.iteritems():
 
             datasets_trimmed = copy.deepcopy(datasets[year][proc])
             for key in datasets_trimmed.keys():
-                if ("eta_" + coupling.lower()) in key or proc != "fcnc":
+                if ("eta_" + coupling.lower()) in key or coupling.upper() in key or proc != "fcnc":
                     continue
                 else:
                     del datasets_trimmed[key]

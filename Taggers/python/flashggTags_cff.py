@@ -123,6 +123,7 @@ flashggTTHHadronicTag = cms.EDProducer("FlashggTTHHadronicTagProducer",
 
 flashggFCNCHadronicTag = cms.EDProducer("FlashggFCNCHadronicTagProducer",
                                        Coupling=cms.string(''),
+                                       SplitFactor=cms.double(1.0), # factor by which we have multiplied event weights and therefore factor by which we need to skip events
                                        DiPhotonName=cms.string('flashggPreselectedDiPhotons'),
                                        DiPhotonSuffixes = cms.vstring(''), # nominal and systematic variations
                                        JetsName=cms.string('flashggUnpackedJets'),
@@ -206,7 +207,7 @@ flashggFCNCHadronicTag = cms.EDProducer("FlashggFCNCHadronicTagProducer",
                                        ElePhotonDrCut = cms.double(0.),
                                        ElePhotonZMassCut = cms.double(5),
                                        DeltaRTrkEle = cms.double(0.),
-                                       debug = cms.bool(True)
+                                       debug = cms.bool(False)
                                        )
 
 
@@ -352,6 +353,7 @@ flashggTTHLeptonicTag = cms.EDProducer("FlashggTTHLeptonicTagProducer",
 
 flashggFCNCLeptonicTag = cms.EDProducer("FlashggFCNCLeptonicTagProducer",
                                        Coupling=cms.string(''),
+                                       SplitFactor=cms.double(1.0), # factor by which we have multiplied event weights and therefore factor by which we need to skip events 
                                        DiPhotonName=cms.string('flashggPreselectedDiPhotons'),
                                        DiPhotonSuffixes = cms.vstring(''), # nominal and systematic variations
                                        JetsName=cms.string('flashggUnpackedJets'),
@@ -424,7 +426,7 @@ flashggFCNCLeptonicTag = cms.EDProducer("FlashggFCNCLeptonicTagProducer",
                                        DeltaRTrkEle = cms.double(0.35),
                                        UseCutBasedDiphoId = cms.bool(False),
                                        SplitDiLeptEv = cms.bool(True),
-                                       debug = cms.bool(True),
+                                       debug = cms.bool(False),
                                        CutBasedDiphoId = cms.vdouble(0.4,0.3,0.0,-0.5,2.0,2.5)    # pT/m lead, pT/m sublead, leadIdMVA, subleadIdMVA, DeltaEta, DeltaPhi
 )
 

@@ -148,6 +148,11 @@ class JobConfig(object):
                                VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                                VarParsing.VarParsing.varType.string,          # string, int, or float
                                "normalizationInfo")
+        self.options.register ('splitFactor',
+                               1, # default value
+                               VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                               VarParsing.VarParsing.varType.int,          # string, int, or float
+                               "splitFactor")
         self.options.register ('WeightName', # for THQ/THW samples the LHE weight should be mentioned
                                None, # default value
                                VarParsing.VarParsing.multiplicity.singleton, # singleton or list
@@ -280,6 +285,9 @@ class JobConfig(object):
             for name,obj in process.__dict__.iteritems():
                 if hasattr(obj,"lumiWeight"):
                     wei = (float(xsec) / float(totEvents)) * self.targetLumi
+                    if self.splitFactor is not None and self.splitFactor != 1.:
+                        print "[FCNC] Scaling normalization by a factor of %.1f to account for sample splits" % float(self.splitFactor)
+                        wei *= float(self.splitFactor)
                     obj.lumiWeight = wei
                 if hasattr(obj,"intLumi"):
                     obj.intLumi = self.targetLumi
@@ -335,6 +343,9 @@ class JobConfig(object):
                             wei = xsec["xs"]/float(totEvents)*self.targetLumi
                             wei *= xsec.get("br",1.)
                             wei *= xsec.get("kf",1.)
+                            if self.splitFactor is not None and self.splitFactor != 1.:
+                                print "Scaling normalization by a factor of %.1f to account for sample splits" % float(self.splitFactor)
+                                wei *= float(self.splitFactor)
                             obj.lumiWeight = wei
 
                     if hasattr(obj,"intLumi"):

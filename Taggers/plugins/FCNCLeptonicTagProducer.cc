@@ -262,6 +262,7 @@ namespace flashgg {
         bool useLargeMVAs;
 
         std::string coupling_;
+        double splitFactor_;
     };
 
     const reco::GenParticle* FCNCLeptonicTagProducer::motherID(const reco::GenParticle* gp)
@@ -435,6 +436,7 @@ namespace flashgg {
         useLargeMVAs = iConfig.getParameter<bool> ( "UseLargeMVAs" );
 
         coupling_ = iConfig.getParameter<std::string>( "Coupling" );
+        splitFactor_ = iConfig.getParameter<double>( "SplitFactor" );
 
         // Get diphoton candidates corresponding to each systematic
         inputDiPhotonName_= iConfig.getParameter<std::string>( "DiPhotonName" );
@@ -816,9 +818,21 @@ namespace flashgg {
     }
     void FCNCLeptonicTagProducer::produce( Event &evt, const EventSetup & )
     {
-        //Handle<View<flashgg::Jet> > theJets;
-        //evt.getByToken( thejetToken_, theJets );
-        //const PtrVector<flashgg::Jet>& jetPointers = theJets->ptrVector();
+        unique_ptr<unsigned long long> evt_event (new unsigned long long);
+        *evt_event = evt.id().event();
+
+        bool skip;
+        if (*evt_event % (unsigned int)splitFactor_ == (unsigned int)(splitFactor_-1)) {
+            if (debug_)
+                std::cout << "Event number modulo split factor is split factor minus 1, keeping event" << std::endl;
+            skip = false;
+        }
+        else {
+            if (debug_)
+                std::cout << "Event number modulo split factor is not split factor minus 1, skipping event" << std::endl;
+            skip = true;
+        }
+
         JetCollectionVector Jets(inputJetsCollSize_);
         if (!modifySystematicsWorkflow) {
             for( size_t j = 0; j < inputTagJets_.size(); ++j ) {
@@ -922,6 +936,8 @@ namespace flashgg {
 
             for( unsigned int diphoIndex = 0; diphoIndex < diPhotons->size(); diphoIndex++ )
             {
+                if (skip)   continue;
+
                 unsigned int jetCollectionIndex = diPhotons->ptrAt( diphoIndex )->jetCollectionIndex();
 
                 edm::Ptr<flashgg::DiPhotonCandidate> dipho = diPhotons->ptrAt( diphoIndex );

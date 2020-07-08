@@ -157,9 +157,9 @@ for dataset in [dir for dir in glob.glob(args.fcnc_wildcard) if "FCNC" in dir]:
     datasets[year]["fcnc"][sample] = { "input_loc" : dataset }
 
     normalizationInfo = ""
-    split_factor = 3.0
+    split_factor = 3
 
-    normalizationInfo = " normalizationInfo=%.6f,%.6f splitFactor=%.1f" % (samples[smp_match]["xs"], (samples[smp_match]["xs"]*1000.) / samples[smp_match][year]["scale1fb"], split_factor)
+    normalizationInfo = " normalizationInfo=%.6f,%.6f splitFactor=%d" % (samples[smp_match]["xs"], (samples[smp_match]["xs"]*1000.) / samples[smp_match][year]["scale1fb"], split_factor)
     datasets[year]["fcnc"][sample]["args"] = normalizationInfo
     datasets[year]["fcnc"][sample]["year"] = year
 
@@ -176,8 +176,8 @@ for year in years:
             catalog_name = info[0]
             cmdLine = datasets_to_add["cmdLine"]
             if "120" in sample or "125" in sample or "130" in sample:
-                split_factor = 2.0
-                cmdLine += " splitFactor=%.1f" % split_factor # multiply SM Higgs by 2 to account for optimization / final fit splits
+                split_factor = 2
+                cmdLine += " splitFactor=%d" % split_factor # multiply SM Higgs by 2 to account for optimization / final fit splits
             if sample_name in samples.keys():
                 xs = samples[sample_name]["xs"]
 

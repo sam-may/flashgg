@@ -123,7 +123,7 @@ flashggTTHHadronicTag = cms.EDProducer("FlashggTTHHadronicTagProducer",
 
 flashggFCNCHadronicTag = cms.EDProducer("FlashggFCNCHadronicTagProducer",
                                        Coupling=cms.string(''),
-                                       SplitFactor=cms.double(1.0), # factor by which we have multiplied event weights and therefore factor by which we need to skip events
+                                       SplitFactor=cms.int32(1), # factor by which we have multiplied event weights and therefore factor by which we need to skip events
                                        DiPhotonName=cms.string('flashggPreselectedDiPhotons'),
                                        DiPhotonSuffixes = cms.vstring(''), # nominal and systematic variations
                                        JetsName=cms.string('flashggUnpackedJets'),
@@ -353,7 +353,7 @@ flashggTTHLeptonicTag = cms.EDProducer("FlashggTTHLeptonicTagProducer",
 
 flashggFCNCLeptonicTag = cms.EDProducer("FlashggFCNCLeptonicTagProducer",
                                        Coupling=cms.string(''),
-                                       SplitFactor=cms.double(1.0), # factor by which we have multiplied event weights and therefore factor by which we need to skip events 
+                                       SplitFactor=cms.int32(1), # factor by which we have multiplied event weights and therefore factor by which we need to skip events 
                                        DiPhotonName=cms.string('flashggPreselectedDiPhotons'),
                                        DiPhotonSuffixes = cms.vstring(''), # nominal and systematic variations
                                        JetsName=cms.string('flashggUnpackedJets'),

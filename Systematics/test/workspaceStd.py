@@ -652,7 +652,7 @@ if customize.tthTagsOnly or customize.fcncHutTagsOnly or customize.fcncHctTagsOn
         modifySystematicsWorkflowForFCNC(process, systlabels, phosystlabels, metsystlabels, jetsystlabels, coupling)
         if customize.splitFactor is not None and customize.splitFactor != 1.:
             for tag in ["flashggFCNCLeptonicTag", "flashggFCNCHadronicTag"]:
-                getattr(process, tag).SplitFactor = cms.double(customize.splitFactor)
+                getattr(process, tag).SplitFactor = cms.int32(customize.splitFactor)
 
 else:
     process.p = cms.Path(process.dataRequirements*

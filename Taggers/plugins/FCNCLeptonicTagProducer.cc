@@ -262,7 +262,7 @@ namespace flashgg {
         bool useLargeMVAs;
 
         std::string coupling_;
-        double splitFactor_;
+        int splitFactor_;
     };
 
     const reco::GenParticle* FCNCLeptonicTagProducer::motherID(const reco::GenParticle* gp)
@@ -436,7 +436,7 @@ namespace flashgg {
         useLargeMVAs = iConfig.getParameter<bool> ( "UseLargeMVAs" );
 
         coupling_ = iConfig.getParameter<std::string>( "Coupling" );
-        splitFactor_ = iConfig.getParameter<double>( "SplitFactor" );
+        splitFactor_ = iConfig.getParameter<int>( "SplitFactor" );
 
         // Get diphoton candidates corresponding to each systematic
         inputDiPhotonName_= iConfig.getParameter<std::string>( "DiPhotonName" );

@@ -347,7 +347,7 @@ def trim_dictionary(dictionary, to_remove):
         else:
             trim_dictionary(info, to_remove)
 
-max_ws = 25
+max_ws = 15
 def hadd_workspaces(master, targets):
     if len(targets.split(" ")) <= max_ws:
         return "/usr/bin/ionice -c2 -n7 hadd_workspaces %s %s" % (master, targets)
@@ -459,7 +459,7 @@ if args.hadd_workspaces:
         json.dump(workspaces_summary, f_out, sort_keys=True, indent=4)
 
     command_list = search_for_command(workspaces)
-    parallel_utils.submit_jobs(command_list, 12)
+    parallel_utils.submit_jobs(command_list, 3)
     for coupling, info in couplings.iteritems():
         for year in years:
             command = "hadd_workspaces %s %s %s" % (couplings[coupling][year]["outdir"] + "/ws_merged_fcnc_%s_tt_st_%s.root" % (coupling, year), couplings[coupling][year]["outdir"] + "/ws_merged_fcnc_%s_tt_%s.root" % (coupling, year), couplings[coupling][year]["outdir"] + "/ws_merged_fcnc_%s_st_%s.root" % (coupling, year))

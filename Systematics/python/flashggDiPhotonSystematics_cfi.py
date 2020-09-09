@@ -37,6 +37,7 @@ def setupDiPhotonSystematics( process, options ):
    flashggDiPhotonSystematics.SystMethods.append(sysmodule.LooseMvaSF)
    flashggDiPhotonSystematics.SystMethods.append(sysmodule.SigmaEOverEShift)
    flashggDiPhotonSystematics.SystMethods.append(sysmodule.SigmaEOverESmearing)
+   flashggDiPhotonSystematics.SystMethods.append(sysmodule.PixelSeedWeight)
 
    if (options.processId.count('ggh') or options.processId.count('GluGluHToGG')) and not options.processId.count('gghh'):
       flashggDiPhotonSystematics.SystMethods.append(sysmodule.FracRVWeight)

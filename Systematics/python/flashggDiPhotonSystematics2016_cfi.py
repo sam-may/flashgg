@@ -33,6 +33,46 @@ electronVetoBins = cms.PSet(
         )
     )
 
+# Added from https://github.com/mhl0116/flashgg/blob/preapproval_ws/Systematics/python/flashggDiPhotonSystematics2016_cfi.py
+leadPixelSeedBins = cms.PSet(
+    variables = cms.vstring("abs(superCluster.eta)","full5x5_r9", "hasPixelSeed"),
+    bins = cms.VPSet(
+    
+     # No Pixel Seed                                                                                                                                                          
+        
+        cms.PSet( lowBounds = cms.vdouble( 0.0, 0.85, -0.1 ) , upBounds = cms.vdouble( 1.5, 999. , 0.1) , values = cms.vdouble(0.989 ) , uncertainties = cms.vdouble( -0.007 )  ),
+        cms.PSet( lowBounds = cms.vdouble( 0.0, 0.00, -0.1 ) , upBounds = cms.vdouble( 1.5, 0.85 , 0.1) , values = cms.vdouble(1.007 ) , uncertainties = cms.vdouble( -0.007 )  ),
+        cms.PSet( lowBounds = cms.vdouble( 1.5, 0.90, -0.1 ) , upBounds = cms.vdouble( 6.0, 999.,  0.1) , values = cms.vdouble(0.966 ) , uncertainties = cms.vdouble( -0.01  )  ),
+        cms.PSet( lowBounds = cms.vdouble( 1.5, 0.00, -0.1 ) , upBounds = cms.vdouble( 6.0, 0.90 , 0.1) , values = cms.vdouble(0.979 ) , uncertainties = cms.vdouble( -0.03  )  ),
+        
+        # Yes Pixel Seed                                                                                                                                                     
+        
+        cms.PSet( lowBounds = cms.vdouble( 0.0, 0.85, 0.9 ) , upBounds = cms.vdouble( 1.5, 999., 1.1 ) , values = cms.vdouble( 1.434 ) , uncertainties = cms.vdouble( 0.20  )  ),
+        cms.PSet( lowBounds = cms.vdouble( 0.0, 0.00, 0.9 ) , upBounds = cms.vdouble( 1.5, 0.85, 1.1 ) , values = cms.vdouble( 0.979 ) , uncertainties = cms.vdouble( 0.02  )  ),   
+        cms.PSet( lowBounds = cms.vdouble( 1.5, 0.90, 0.9 ) , upBounds = cms.vdouble( 6.0, 999., 1.1 ) , values = cms.vdouble( 1.176 ) , uncertainties = cms.vdouble( 0.06  )  ),
+        cms.PSet( lowBounds = cms.vdouble( 1.5, 0.00, 0.9 ) , upBounds = cms.vdouble( 6.0, 0.90, 1.1 ) , values = cms.vdouble( 1.046 ) , uncertainties = cms.vdouble( 0.07  )  ) 
+        )
+    )
+
+subleadPixelSeedBins = cms.PSet(
+    variables = cms.vstring("abs(superCluster.eta)","full5x5_r9", "hasPixelSeed"),
+    bins = cms.VPSet(
+
+     # No Pixel Seed                                                                                                                                                        
+        
+        cms.PSet( lowBounds = cms.vdouble( 0.0, 0.85, -0.1 ) , upBounds = cms.vdouble( 1.5, 999. , 0.1) , values = cms.vdouble(0.989 ) , uncertainties = cms.vdouble( -0.007 )  ),
+        cms.PSet( lowBounds = cms.vdouble( 0.0, 0.00, -0.1 ) , upBounds = cms.vdouble( 1.5, 0.85 , 0.1) , values = cms.vdouble(1.007 ) , uncertainties = cms.vdouble( -0.007 )  ),
+        cms.PSet( lowBounds = cms.vdouble( 1.5, 0.90, -0.1 ) , upBounds = cms.vdouble( 6.0, 999.,  0.1) , values = cms.vdouble(0.966 ) , uncertainties = cms.vdouble( -0.01  )  ),
+        cms.PSet( lowBounds = cms.vdouble( 1.5, 0.00, -0.1 ) , upBounds = cms.vdouble( 6.0, 0.90 , 0.1) , values = cms.vdouble(0.979 ) , uncertainties = cms.vdouble( -0.03  )  ),
+
+        # Yes Pixel Seed                                                                                                                                                      
+        
+        cms.PSet( lowBounds = cms.vdouble( 0.0, 0.85, 0.9 ) , upBounds = cms.vdouble( 1.5, 999., 1.1 ) , values = cms.vdouble( 1.434 ) , uncertainties = cms.vdouble( 0.20  )  ),
+        cms.PSet( lowBounds = cms.vdouble( 0.0, 0.00, 0.9 ) , upBounds = cms.vdouble( 1.5, 0.85, 1.1 ) , values = cms.vdouble( 0.979 ) , uncertainties = cms.vdouble( 0.02  )  ),
+        cms.PSet( lowBounds = cms.vdouble( 1.5, 0.90, 0.9 ) , upBounds = cms.vdouble( 6.0, 999., 1.1 ) , values = cms.vdouble( 1.176 ) , uncertainties = cms.vdouble( 0.06  )  ),
+        cms.PSet( lowBounds = cms.vdouble( 1.5, 0.00, 0.9 ) , upBounds = cms.vdouble( 6.0, 0.90, 1.1 ) , values = cms.vdouble( 1.046 ) , uncertainties = cms.vdouble( 0.07  )  )
+        )
+    )
 
 # Based on the updated derivation by N. Schroeder for HIG-19-004. Re-evaluated in coarse Eta-R9 bins
 FNUFBins = cms.PSet(
@@ -839,4 +879,15 @@ MCScaleGain1EB_EGM = cms.PSet( PhotonMethodName = cms.string("FlashggPhotonScale
          UncertaintyBitMask = cms.string("100"),#cms.string("001"), # this should be a bit mask, don't know how to make it in python now
          Debug = cms.untracked.bool(False)
          )
+
+PixelSeedWeight = cms.PSet( PhotonMethodName = cms.string("FlashggPhotonWeight"),
+          MethodName = cms.string("FlashggDiPhotonFromPhoton"),
+          Label = cms.string("PixelSeedWeight"),
+          NSigmas = cms.vint32(-1,1),
+          OverallRange = cms.string("pt<99999"),
+          BinList = leadPixelSeedBins,
+          BinList2 = subleadPixelSeedBins,
+          Debug = cms.untracked.bool(False),
+          ApplyCentralValue = cms.bool(True)
+          )
 

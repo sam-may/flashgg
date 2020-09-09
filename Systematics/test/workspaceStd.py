@@ -18,7 +18,7 @@ process.load("Configuration.StandardSequences.GeometryDB_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 1000 )
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 1 )
 
 
 systlabels = [""]
@@ -402,6 +402,7 @@ if is_signal:
             metsystlabels.append("metJerUncertainty%s01sigma" % direction)
             metsystlabels.append("metPhoUncertainty%s01sigma" % direction)
             metsystlabels.append("metUncUncertainty%s01sigma" % direction)
+            variablesToUse.append("PixelSeedWeight%s01sigma[1,-999999.,999999.] := getObjectWeight(\"PixelSeedWeight%s01sigma\")" % (direction,direction))
             variablesToUse.append("LooseMvaSF%s01sigma[1,-999999.,999999.] := weight(\"LooseMvaSF%s01sigma\")" % (direction,direction))
             variablesToUse.append("PreselSF%s01sigma[1,-999999.,999999.] := weight(\"PreselSF%s01sigma\")" % (direction,direction))
             variablesToUse.append("electronVetoSF%s01sigma[1,-999999.,999999.] := weight(\"electronVetoSF%s01sigma\")" % (direction,direction))

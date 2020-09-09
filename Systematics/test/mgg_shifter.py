@@ -7,7 +7,7 @@ parser = OptionParser()
 parser.add_option("--inputFile", dest="inputFile", default="/vols/cms/es811/FinalFits/ws_ReweighAndNewggHweights/output_GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8_GG2H.root", help="Input file")
 parser.add_option("--inputMass", dest="inputMass", default=125, type='int', help="Input mass")
 parser.add_option("--targetMass", dest="targetMass", default=130, type='int', help="Target mass")
-parser.add_option("--verbose", dest="verbose", default=0, type='int', help="Verbose output")
+parser.add_option("--verbose", dest="verbose", default=1, type='int', help="Verbose output")
 (opt,args) = parser.parse_args()
 
 verbose = opt.verbose
@@ -126,7 +126,7 @@ for d_orig in allData:
 for d_shift in shifted_datasets.itervalues(): wsout.imp( d_shift, ROOT.RooFit.RecycleConflictNodes() )
 
 # Configure output file and write output ws
-fout_name = re.sub("M%s"%str(opt.inputMass),"M%s"%str(opt.targetMass), opt.inputFile)
+fout_name = re.sub("%s"%str(opt.inputMass),"%s"%str(opt.targetMass), opt.inputFile)
 fout = ROOT.TFile.Open(fout_name, "RECREATE")
 dir_ws = fout.mkdir("tagsDumper")
 dir_ws.cd()

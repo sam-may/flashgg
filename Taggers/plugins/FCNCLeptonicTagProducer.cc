@@ -216,6 +216,7 @@ namespace flashgg {
         float top_tag_score_;
 
         float lepton_nTight_;
+        float lep1_charge_;
 
         float dnn_score_0_;
        
@@ -684,6 +685,7 @@ namespace flashgg {
         FCNC_BDTNRB_RunII_->AddVariable("lep_pt_", &lepton_leadPt_);
         FCNC_BDTNRB_RunII_->AddVariable("lep_eta_", &lepton_leadEta_);
         FCNC_BDTNRB_RunII_->AddVariable("n_lep_tight_", &lepton_nTight_);
+        FCNC_BDTNRB_RunII_->AddVariable("lep1_charge_", &lep1_charge_);
 
         FCNC_BDTNRB_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
         FCNC_BDTNRB_RunII_->AddVariable("chi2_neutrino_pz_", &chi2_neutrino_pz_);
@@ -739,6 +741,7 @@ namespace flashgg {
         FCNC_BDTSMH_RunII_->AddVariable("lep_pt_", &lepton_leadPt_);
         FCNC_BDTSMH_RunII_->AddVariable("lep_eta_", &lepton_leadEta_);
         FCNC_BDTSMH_RunII_->AddVariable("n_lep_tight_", &lepton_nTight_);
+        FCNC_BDTSMH_RunII_->AddVariable("lep1_charge_", &lep1_charge_);
 
         FCNC_BDTSMH_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
         FCNC_BDTSMH_RunII_->AddVariable("chi2_neutrino_pz_", &chi2_neutrino_pz_);
@@ -1475,14 +1478,19 @@ namespace flashgg {
                 {
                     lepton_leadPt_ = Muons[leadMuIndex]->pt();
                     lepton_leadEta_ = Muons[leadMuIndex]->eta();
+                    lep1_charge_ = Muons[leadMuIndex]->charge();
                     leading_lepton = leading_muon;
                 }
                 else
                 {
                     lepton_leadPt_ = Electrons[leadEleIndex]->pt();
                     lepton_leadEta_ = Electrons[leadEleIndex]->eta();
+                    lep1_charge_ = Electrons[leadEleIndex]->charge();
                     leading_lepton = leading_electron;
                 }
+
+
+                
 
                 //------------------------------//
                 //#quadratic equation related
@@ -1589,6 +1597,7 @@ namespace flashgg {
                   cout << "lep_pt_: " << lepton_leadPt_ << endl;
                   cout << "lep_eta_: " << lepton_leadEta_ << endl;
                   cout << "n_lep_tight_: " << lepton_nTight_ << endl;
+                  cout << "lep1_charge_: " << lep1_charge_ << endl;
 
                   cout << "DNN Score 0: " << dnn_score_0_ << endl;
                   cout << endl;

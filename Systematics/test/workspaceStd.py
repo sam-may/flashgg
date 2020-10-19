@@ -297,6 +297,8 @@ if customize.tthTagsOnly or customize.fcncHutTagsOnly or customize.fcncHctTagsOn
     process.flashggTagSequence.remove(process.flashggVBFDiPhoDiJetMVA)
     process.flashggTagSequence.remove(process.flashggTTHHadronicTag) # Remove ttH tags as well, as we add these in later manually (with modified systematics worfklow)
     process.flashggTagSequence.remove(process.flashggTTHLeptonicTag)
+    process.flashggTagSequence.remove(process.flashggFCNCHadronicTag)
+    process.flashggTagSequence.remove(process.flashggFCNCLeptonicTag)
     process.flashggTagSequence.remove(process.flashggTTHDiLeptonTag)
     process.flashggTagSequence.remove(process.flashggTHQLeptonicTag)
 

@@ -194,6 +194,9 @@ for year in years:
                     #print "cmdLine before", cmdLine
                     cmdLine = cmdLine.replace("campaign=%s" % catalog_dict[year], "campaign=%s" % catalog_dict[sample_year])
                     cmdLine = cmdLine.replace(pu_dict[year], pu_dict[sample_year])
+
+                    if "THQ_ctcvcp" in sample_name or "THW_ctcvcp" in sample_name:
+                        cmdLine += " WeightName=rwgt_12 "
                     #print "cmdLine after", cmdLine
                 production_names = []
                 for production in samples[sample_name][sample_year].keys():

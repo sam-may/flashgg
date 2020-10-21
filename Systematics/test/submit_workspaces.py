@@ -452,7 +452,7 @@ if args.hadd_workspaces:
     # add all data files to make master data file
     if "data" in procs:
         for coupling, info in workspaces.iteritems():
-            info["data"]["master"] = (os.popen("pwd").read()).rstrip() + "/ws_merged_data_%s_all.root" % (coupling)
+            info["data"]["master"] = (os.popen("pwd").read()).rstrip() + "/" + couplings[coupling][year]["outdir"] + "/ws_merged_data_%s_all.root" % (coupling)
             info["data"]["targets"] = ""
             for year in years:
                 info["data"]["targets"] += info["data"][year]["master"] + " "

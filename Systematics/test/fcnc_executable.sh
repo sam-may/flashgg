@@ -26,7 +26,7 @@ echo
 echo
 echo
 rm package.tar.gz
-xrdcp root://redirector.t2.ucsd.edu///store/user/smay/FCNC/MY_DIR/package.tar.gz .
+timeout 15m xrdcp root://redirector.t2.ucsd.edu///store/user/smay/FCNC/MY_DIR/package.tar.gz .
 export SCRAM_ARCH=slc7_amd64_gcc700
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 tar xvf package.tar.gz

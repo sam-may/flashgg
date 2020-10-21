@@ -27,24 +27,12 @@
     "vbf_130": [
       "/VBFHToGG_M130_13TeV_amcatnlo_pythia8/spigazzi-Era2017_RR-31Mar2018_v2-legacyRun2FullV1-v0-RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1-fb12d0f0ef6bfdb97703485ba72bfbd7/USER"
     ], 
-    "thq_120": [
-      "/THQ_ctcvcp_HToGG_M120_13TeV-madgraph-pythia8_TuneCP5/spigazzi-Era2017_RR-31Mar2018_v2-legacyRun2FullV1-v0-RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1-bc7e32150d646e869747d832d07c9d2a/USER"
-    ],
     "thq_125": [
       "/THQ_ctcvcp_HToGG_M125_13TeV-madgraph-pythia8_TuneCP5/spigazzi-Era2017_RR-31Mar2018_v2-legacyRun2FullV1-v0-RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1-bc7e32150d646e869747d832d07c9d2a/USER"
     ],
-    "thq_130": [
-      "/THQ_ctcvcp_HToGG_M130_13TeV-madgraph-pythia8_TuneCP5/spigazzi-Era2017_RR-31Mar2018_v2-legacyRun2FullV1-v0-RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1-bc7e32150d646e869747d832d07c9d2a/USER"
-    ],
-    "thw_120": [
-      "/THW_ctcvcp_HToGG_M120_13TeV-madgraph-pythia8_TuneCP5/spigazzi-Era2017_RR-31Mar2018_v2-legacyRun2FullV1-v0-RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1-c46a6cc8d3f26740540b49c8857b79fb/USER"
-    ], 
     "thw_125": [
       "/THW_ctcvcp_HToGG_M125_13TeV-madgraph-pythia8_TuneCP5/spigazzi-Era2017_RR-31Mar2018_v2-legacyRun2FullV1-v0-RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1-c46a6cc8d3f26740540b49c8857b79fb/USER"
     ],
-    "thw_130": [
-      "/THW_ctcvcp_HToGG_M130_13TeV-madgraph-pythia8_TuneCP5/spigazzi-Era2017_RR-31Mar2018_v2-legacyRun2FullV1-v0-RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1-c46a6cc8d3f26740540b49c8857b79fb/USER"
-    ], 
     "bbh_125": [
       "/bbHToGG_M-125_4FS_yb2_13TeV_amcatnlo/spigazzi-Era2017_RR-31Mar2018_v2-legacyRun2FullV1-v0-RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1-3da075b92990944976687db6a045f405/USER"
     ],

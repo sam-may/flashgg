@@ -91,6 +91,7 @@ float DiPhotonTagBase::getObjectWeight(std::string key) const
         return this->weight(key);
     }
     else {
+        cout << "Could not find weight: " << key << ", returning central weight." << endl;
         return this->centralWeight();
     }
 }

@@ -27,24 +27,12 @@
     "vbf_130": [
       "/VBFHToGG_M130_13TeV_amcatnlo_pythia8/spigazzi-Era2016_RR-17Jul2018_v2-legacyRun2FullV1-v0-RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2-42666aea495bdc3a36d796ff9c4bc819/USER"
     ], 
-    "thq_120": [
-      "/THQ_ctcvcp_HToGG_M120_13TeV-madgraph-pythia8_TuneCP5/spigazzi-Era2017_RR-31Mar2018_v2-legacyRun2FullV1-v0-RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1-bc7e32150d646e869747d832d07c9d2a/USER"
-    ],
     "thq_125": [
       "/THQ_ctcvcp_HToGG_M125_13TeV-madgraph-pythia8_TuneCUETP8M1_v2/spigazzi-Era2016_RR-17Jul2018_v2-legacyRun2FullV1-v0-RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2-b8a5b6287120fce79bb02069cbed82a0/USER"
-    ],
-    "thq_130": [
-      "/THQ_ctcvcp_HToGG_M130_13TeV-madgraph-pythia8_TuneCP5/spigazzi-Era2017_RR-31Mar2018_v2-legacyRun2FullV1-v0-RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1-bc7e32150d646e869747d832d07c9d2a/USER"
-    ], 
-    "thw_120": [
-      "/THW_ctcvcp_HToGG_M120_13TeV-madgraph-pythia8_TuneCUETP8M1_v2/spigazzi-Era2016_RR-17Jul2018_v2-legacyRun2FullV1-v0-RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2-0f39adba5dbc548d611578513f3de618/USER",
     ],
     "thw_125": [
       "/THW_ctcvcp_HToGG_M125_13TeV-madgraph-pythia8_TuneCUETP8M1_v2/spigazzi-Era2016_RR-17Jul2018_v2-legacyRun2FullV1-v0-RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2-0f39adba5dbc548d611578513f3de618/USER"
     ], 
-    "thw_130": [
-      "/THW_ctcvcp_HToGG_M130_13TeV-madgraph-pythia8_TuneCUETP8M1_v2/spigazzi-Era2016_RR-17Jul2018_v2-legacyRun2FullV1-v0-RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2-0f39adba5dbc548d611578513f3de618/USER"
-    ],
     "bbh_125": [
       "/bbHToGG_M-125_4FS_ybyt_13TeV_amcatnlo/spigazzi-Era2016_RR-17Jul2018_v2-legacyRun2FullV1-v0-RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2-4de0a2b2fd62f04f46180d08e0d1e346/USER"
     ], 

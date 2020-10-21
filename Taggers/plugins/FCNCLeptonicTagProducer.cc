@@ -27,6 +27,7 @@
 #include "flashgg/Taggers/interface/BDT_resolvedTopTagger.h"
 #include "flashgg/Taggers/interface/TTH_DNN_Helper.h"
 #include "flashgg/Taggers/interface/TopRecoHelper.h"
+#include "flashgg/Taggers/interface/ANN_LeptonicTopRecoHelper.h"
 
 #include <vector>
 #include <algorithm>
@@ -89,6 +90,8 @@ namespace flashgg {
         FileInPath MVAweightfile_;
 
         FileInPath topTaggerXMLfile_;
+        FileInPath fcncTaggerXMLfile_tt_;
+        FileInPath fcncTaggerXMLfile_st_;
 
         unique_ptr<TMVA::Reader>TThMva_RunII_;
         FileInPath tthMVA_RunII_weightfile_;
@@ -214,6 +217,8 @@ namespace flashgg {
         float ht_;
         float helicity_angle_;
         float top_tag_score_;
+        float fcnc_tag_score_tt_;
+        float fcnc_tag_score_st_;
 
         float lepton_nTight_;
         float lep1_charge_;
@@ -243,6 +248,7 @@ namespace flashgg {
         //------------------------------//
         
         BDT_resolvedTopTagger *topTagger;
+        ANN_LeptonicTopTagger *fcncTagger;
         TTH_DNN_Helper* dnn;
 
         bool modifySystematicsWorkflow;
@@ -566,6 +572,8 @@ namespace flashgg {
 
         MVAweightfile_ = iConfig.getParameter<edm::FileInPath>( "MVAweightfile" );
         topTaggerXMLfile_ = iConfig.getParameter<edm::FileInPath>( "topTaggerXMLfile" );
+        fcncTaggerXMLfile_tt_ = iConfig.getParameter<edm::FileInPath>( "fcncTaggerXMLfile_tt" );
+        fcncTaggerXMLfile_st_ = iConfig.getParameter<edm::FileInPath>( "fcncTaggerXMLfile_st" );
         tthVsttGGDNNfile_ = iConfig.getParameter<edm::FileInPath>( "tthVsttGGDNNfile" );
         tthMVA_RunII_weightfile_ = iConfig.getParameter<edm::FileInPath>( "tthMVA_RunII_weightfile" );
 
@@ -703,6 +711,8 @@ namespace flashgg {
         FCNC_BDTNRB_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
         FCNC_BDTNRB_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
         FCNC_BDTNRB_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
+        FCNC_BDTNRB_RunII_->AddVariable("dnn_score_fcnc_st_", &fcnc_tag_score_st_);
+        FCNC_BDTNRB_RunII_->AddVariable("dnn_score_fcnc_tt_", &fcnc_tag_score_tt_);
 
         FCNC_BDTSMH_RunII_.reset( new TMVA::Reader( "!Color:Silent" ) );
 
@@ -759,6 +769,8 @@ namespace flashgg {
         FCNC_BDTSMH_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
         FCNC_BDTSMH_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
         FCNC_BDTSMH_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
+        FCNC_BDTSMH_RunII_->AddVariable("dnn_score_fcnc_st_", &fcnc_tag_score_st_); 
+        FCNC_BDTSMH_RunII_->AddVariable("dnn_score_fcnc_tt_", &fcnc_tag_score_tt_);
 
         if (coupling_ == "Hut") {
             std::cout << "Coupling selected as " << coupling_ << ", loading the following MVAs: " << fcncHutBDTNRBWeightFile_.fullPath() << ", " << fcncHutBDTSMHWeightFile_.fullPath() << std::endl;
@@ -774,6 +786,9 @@ namespace flashgg {
 
         if (useLargeMVAs) {
             topTagger = new BDT_resolvedTopTagger(topTaggerXMLfile_.fullPath());
+            
+            fcncTagger = new ANN_LeptonicTopTagger(fcncTaggerXMLfile_tt_.fullPath(), fcncTaggerXMLfile_st_.fullPath());
+
             //dnn = new TTH_DNN_Helper(tthVsttGGDNNfile_.fullPath());
             //dnn->SetInputShapes(19, 9, 8);
         }
@@ -1109,6 +1124,13 @@ namespace flashgg {
                     index+=i;
                     std::pair<unsigned int, float>pairToSort = std::make_pair(index, pt);
                     sorter.push_back( pairToSort );
+
+                    if (useLargeMVAs) {
+                        float lepton_id = Muons[i]->charge() < 0 ? 13. : -13.;
+                        fcncTagger->addMuon(Muons[i]->pt(), Muons[i]->eta(), Muons[i]->phi(), Muons[i]->energy(), lepton_id);
+                        fcncTagger->addLepton(Muons[i]->pt(), Muons[i]->eta(), Muons[i]->phi(), Muons[i]->energy(), lepton_id);
+                    }
+
                     if(debug_) cout<<" muon "<< i <<" pt="<<pt<< endl;
                 }
                 for(unsigned int i=0;i<Electrons.size();i++){
@@ -1117,6 +1139,13 @@ namespace flashgg {
                     index+=i;
                     std::pair<unsigned int, float>pairToSort = std::make_pair(index, pt);
                     sorter.push_back( pairToSort );
+
+                    if (useLargeMVAs) {
+                        float lepton_id = Electrons[i]->charge() < 0 ? 11. : -11.;
+                        fcncTagger->addElectron(Electrons[i]->pt(), Electrons[i]->eta(), Electrons[i]->phi(), Electrons[i]->energy(), lepton_id);
+                        fcncTagger->addLepton(Electrons[i]->pt(), Electrons[i]->eta(), Electrons[i]->phi(), Electrons[i]->energy(), lepton_id);
+                    }
+
                     if(debug_) cout<<" elec "<< i <<" pt="<<pt<< endl;
                 }
                 // sort map by pt
@@ -1171,6 +1200,11 @@ namespace flashgg {
 
                     for (unsigned int i = 0; i < inputJetsCollSize_; i++)
                         evt.getByToken(jetTokens_[jet_syst_idx][i], Jets[i]);
+                }
+
+                if (useLargeMVAs) {
+                    fcncTagger->addPhoton(dipho->leadingPhoton()->pt(), dipho->leadingPhoton()->eta(), dipho->leadingPhoton()->phi(), 0., idmva1);
+                    fcncTagger->addPhoton(dipho->subLeadingPhoton()->pt(), dipho->subLeadingPhoton()->eta(), dipho->subLeadingPhoton()->phi(), 0., idmva2);    
                 }
 
                 std::vector<TLorentzVector> jets;
@@ -1256,6 +1290,7 @@ namespace flashgg {
                           int mult = thejet->userFloat("totalMult") ;
 
                           topTagger->addJet(thejet->pt(), thejet->eta(), thejet->phi(), thejet->mass(), bDisc_topTagger, cvsl, cvsb, ptD, axis1, mult);
+                          fcncTagger->addJet(thejet->pt(), thejet->eta(), thejet->phi(), thejet->mass(), bDiscriminatorValue);
                         }
 
                     }
@@ -1399,6 +1434,11 @@ namespace flashgg {
                 MetPt_ = theMet_->ptrAt( 0 ) -> getCorPt();
                 MetPhi_ = theMet_->ptrAt( 0 ) -> phi();
 
+
+                if (useLargeMVAs) {
+                    fcncTagger->addMet(MetPt_, MetPhi_);
+                }
+
                 TLorentzVector pho1, pho2;
                 pho1.SetPtEtaPhiE(dipho->leadingPhoton()->pt(), dipho->leadingPhoton()->eta(), dipho->leadingPhoton()->phi(), dipho->leadingPhoton()->energy());
                 pho2.SetPtEtaPhiE(dipho->subLeadingPhoton()->pt(), dipho->subLeadingPhoton()->eta(), dipho->subLeadingPhoton()->phi(), dipho->subLeadingPhoton()->energy());
@@ -1435,12 +1475,19 @@ namespace flashgg {
                 }
 
                 vector<float> mvaEval; 
+                vector<float> mvaEval_tt;
+                vector<float> mvaEval_st; 
                 if (useLargeMVAs) {
                     mvaEval = topTagger->EvalMVA();
+                    mvaEval_tt = fcncTagger->EvalMVA_tt();
+                    mvaEval_st = fcncTagger->EvalMVA_st();
                     topTagger->clear();
+                    fcncTagger->clear();
                 }
 
                 top_tag_score_ = mvaEval.size() > 0 ? (mvaEval[0] != - 99 ? mvaEval[0] : -1) : - 1;
+                fcnc_tag_score_tt_ = mvaEval_tt.size() > 0 ? (mvaEval_tt[0] != - 99 ? mvaEval_tt[0] : -1) : - 1;
+                fcnc_tag_score_st_ = mvaEval_st.size() > 0 ? (mvaEval_st[0] != - 99 ? mvaEval_st[0] : -1) : - 1;
                 TLorentzVector leading_electron;
                 TLorentzVector leading_muon;
                 TLorentzVector leading_lepton;
@@ -1598,6 +1645,9 @@ namespace flashgg {
                   cout << "lep_eta_: " << lepton_leadEta_ << endl;
                   cout << "n_lep_tight_: " << lepton_nTight_ << endl;
                   cout << "lep1_charge_: " << lep1_charge_ << endl;
+
+                  cout << "fcnc_tag_score_tt_:" << fcnc_tag_score_tt_ << endl;
+                  cout << "fcnc_tag_score_st_:" << fcnc_tag_score_st_ << endl;
 
                   cout << "DNN Score 0: " << dnn_score_0_ << endl;
                   cout << endl;

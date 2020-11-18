@@ -109,7 +109,7 @@ customize.metaConditions = metaConditions
 customize.processId = processId
 customize.doSystematics = doSystematics
 customize.doGranularJEC = False
-
+customize.ignoreNegR9 = True
 
 jetSystematicsInputTags = createStandardSystematicsProducers(process , customize)
 modifyTagSequenceForSystematics(process,jetSystematicsInputTags)

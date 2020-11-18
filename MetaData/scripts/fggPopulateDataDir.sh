@@ -20,8 +20,8 @@ if [[ $help == 1 ]] || [[ $directory == "" ]]; then
 fi
 
 directory=${directory%/}
-if [[ -L "$directory" && -d "$directory" ]]; then
+#if [[ -L "$directory" && -d "$directory" ]]; then
     echo "Populating ${directory} ..."
-    unlink $directory
+#    unlink $directory
     xrdcp -r root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/flashgg-data/$directory ${directory%data}
-fi
+#fi

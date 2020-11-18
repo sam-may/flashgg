@@ -26,6 +26,8 @@
 
 #include "flashgg/Taggers/interface/BDT_resolvedTopTagger.h"
 #include "flashgg/Taggers/interface/TTH_DNN_Helper.h"
+#include "flashgg/Taggers/interface/TopRecoHelper.h"
+#include "flashgg/Taggers/interface/ANN_LeptonicTopRecoHelper.h"
 
 #include <vector>
 #include <algorithm>
@@ -34,7 +36,9 @@
 #include "TLorentzVector.h"
 #include "TMath.h"
 #include "TMVA/Reader.h"
+#include "TRandom.h"
 
+TRandom* myRandLeptonic = new TRandom();
 
 using namespace std;
 using namespace edm;
@@ -83,15 +87,31 @@ namespace flashgg {
         EDGetTokenT<View<reco::GenParticle> > genParticleToken_;
         string systLabel_;
 
+        EDGetTokenT<double> prefireToken_;
+        bool applyPrefireProbability_; 
+
         typedef std::vector<edm::Handle<edm::View<flashgg::Jet> > > JetCollectionVector;
 
         unique_ptr<TMVA::Reader> DiphotonMva_;
         FileInPath MVAweightfile_;
 
         FileInPath topTaggerXMLfile_;
+        FileInPath fcncTaggerXMLfile_tt_;
+        FileInPath fcncTaggerXMLfile_st_;
 
         unique_ptr<TMVA::Reader>TThMva_RunII_;
         FileInPath tthMVA_RunII_weightfile_;
+
+        unique_ptr<TMVA::Reader> FCNC_BDTNRB_Hut_RunII_;
+        unique_ptr<TMVA::Reader> FCNC_BDTNRB_Hct_RunII_;
+
+        FileInPath fcncHutBDTNRBWeightFile_;
+        FileInPath fcncHctBDTNRBWeightFile_;
+
+        unique_ptr<TMVA::Reader> FCNC_BDTSMH_Hut_RunII_;
+        unique_ptr<TMVA::Reader> FCNC_BDTSMH_Hct_RunII_;
+        FileInPath fcncHutBDTSMHWeightFile_;
+        FileInPath fcncHctBDTSMHWeightFile_;
 
         FileInPath tthVsttGGDNNfile_;
         std::vector<double> tthVsttGGDNN_global_mean_;
@@ -147,6 +167,7 @@ namespace flashgg {
         double leadingJetPtThreshold_;
         vector<double> bDiscriminator_;
         string bTag_;
+        string cTag_;
         double PhoMVAThreshold_;
         double tthVstHThreshold_;
 
@@ -214,8 +235,12 @@ namespace flashgg {
 
         float ht_;
         float helicity_angle_;
+        float top_tag_score_;
+        float fcnc_tag_score_tt_;
+        float fcnc_tag_score_st_;
 
         float lepton_nTight_;
+        float lep1_charge_;
 
         float dnn_score_0_;
 
@@ -223,7 +248,34 @@ namespace flashgg {
 
         float tthMvaVal_RunII_;
 
+        float fcncMvaVal_NRB_Hut_;
+        float fcncMvaVal_NRB_Hct_;
+        float fcncMvaVal_SMH_Hut_;
+        float fcncMvaVal_SMH_Hct_;
+
+        //------------------------------//
+        float chi2_neutrino_pz_;
+        float chi2_tbw_mass_;
+        float chi2_tbw_pt_;
+        float chi2_tbw_eta_;
+        float chi2_tbw_deltaR_dipho_;
+        float chi2_qjet_pt_;
+        float chi2_qjet_eta_;
+        float chi2_qjet_btag_;
+        float chi2_qjet_deltaR_dipho_;
+        float chi2_tqh_ptOverM_;
+        float chi2_tqh_eta_;
+        float chi2_tqh_deltaR_tbw_;
+        float chi2_tqh_deltaR_dipho_;
+        float chi2_bjet_CvsL_;
+        float chi2_qjet_CvsL_;
+        float chi2_bjet_CvsB_;
+        float chi2_qjet_CvsB_;
+        //------------------------------//
+
+
         BDT_resolvedTopTagger *topTagger;
+        ANN_LeptonicTopTagger *fcncTagger;
         TTH_DNN_Helper* dnn;
         TTH_DNN_Helper* dnn_ttH_vs_tH;
 
@@ -537,6 +589,7 @@ namespace flashgg {
 
         bDiscriminator_ = iConfig.getParameter<vector<double > >( "bDiscriminator");
         bTag_ = iConfig.getParameter<string>( "bTag");
+        cTag_ = iConfig.getParameter<string>( "cTag");
 
         UseCutBasedDiphoId_ = iConfig.getParameter<bool>( "UseCutBasedDiphoId" );
         debug_ = iConfig.getParameter<bool>( "debug" );
@@ -545,6 +598,8 @@ namespace flashgg {
 
         MVAweightfile_ = iConfig.getParameter<edm::FileInPath>( "MVAweightfile" );
         topTaggerXMLfile_ = iConfig.getParameter<edm::FileInPath>( "topTaggerXMLfile" );
+        fcncTaggerXMLfile_tt_ = iConfig.getParameter<edm::FileInPath>( "fcncTaggerXMLfile_tt" );
+        fcncTaggerXMLfile_st_ = iConfig.getParameter<edm::FileInPath>( "fcncTaggerXMLfile_st" );
         tthVsttGGDNNfile_ = iConfig.getParameter<edm::FileInPath>( "tthVsttGGDNNfile" );
         tthVsttGGDNN_global_mean_ = iConfig.getParameter<std::vector<double>>( "tthVsttGGDNN_global_mean" );
         tthVsttGGDNN_global_stddev_ = iConfig.getParameter<std::vector<double>>( "tthVsttGGDNN_global_stddev" );
@@ -558,7 +613,11 @@ namespace flashgg {
         tthVstHDNN_object_stddev_ = iConfig.getParameter<std::vector<double>>( "tthVstHDNN_object_stddev" );
             
         tthMVA_RunII_weightfile_ = iConfig.getParameter<edm::FileInPath>( "tthMVA_RunII_weightfile" );
-        
+
+        fcncHutBDTNRBWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHutBDTNRBAWeightFile" );
+        fcncHctBDTNRBWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHctBDTNRBAWeightFile" );
+        fcncHutBDTSMHWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHutBDTSMHAWeightFile" );
+        fcncHctBDTSMHWeightFile_ = iConfig.getParameter<edm::FileInPath>( "fcncHctBDTSMHAWeightFile" );        
 
         DiphotonMva_.reset( new TMVA::Reader( "!Color:Silent" ) );
         DiphotonMva_->AddVariable( "dipho_leadEta", &leadeta_ );
@@ -631,8 +690,248 @@ namespace flashgg {
          
         TThMva_RunII_->BookMVA( "BDT" , tthMVA_RunII_weightfile_.fullPath());     
 
+        FCNC_BDTNRB_Hut_RunII_.reset( new TMVA::Reader( "!Color:Silent" ) );
+        FCNC_BDTNRB_Hct_RunII_.reset( new TMVA::Reader( "!Color:Silent" ) );
+        FCNC_BDTSMH_Hut_RunII_.reset( new TMVA::Reader( "!Color:Silent" ) );
+        FCNC_BDTSMH_Hct_RunII_.reset( new TMVA::Reader( "!Color:Silent" ) );
+
+        // NRB Hut
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("helicity_angle_", &helicity_angle_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("dipho_pt_over_mass_", &diPhoPtoM_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("met_", &MetPt_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("dipho_rapidity_", &diPhoY_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("dipho_cosphi_", &diPhoCosPhi_);
+
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("subleadPSV_", &subleadPSV_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("leadPSV_", &leadPSV_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("jet3_btag_", &btag_noBB_3_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("jet3_eta_", &jetEta_3_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("jet3_pt_", &jetPt_3_);
+
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("jet2_btag_", &btag_noBB_2_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("jet2_eta_", &jetEta_2_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("jet2_pt_", &jetPt_2_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("jet1_btag_", &btag_noBB_1_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("jet1_eta_", &jetEta_1_);
+
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("jet1_pt_", &jetPt_1_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("sublead_eta_", &subleadeta_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("lead_eta_", &leadeta_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("subleadptoM_", &subleadptom_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("leadptoM_", &leadptom_);
+
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("ht_", &ht_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("njets_", &nJets_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
+
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("minIDMVA_", &minPhoID_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("maxIDMVA_", &maxPhoID_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("lep_pt_", &lepton_leadPt_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("lep_eta_", &lepton_leadEta_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("n_lep_tight_", &lepton_nTight_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("lep1_charge_", &lep1_charge_);
+
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_neutrino_pz_", &chi2_neutrino_pz_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_tbw_eta_", &chi2_tbw_eta_);
+
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_tbw_deltaR_dipho_", &chi2_tbw_deltaR_dipho_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_qjet_pt_", &chi2_qjet_pt_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_qjet_eta_", &chi2_qjet_eta_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_qjet_btag_", &chi2_qjet_btag_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_qjet_deltaR_dipho_", &chi2_qjet_deltaR_dipho_);
+
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_tqh_ptOverM_", &chi2_tqh_ptOverM_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("dnn_score_fcnc_st_", &fcnc_tag_score_st_);
+        FCNC_BDTNRB_Hut_RunII_->AddVariable("dnn_score_fcnc_tt_", &fcnc_tag_score_tt_);
+
+        // NRB Hct
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("helicity_angle_", &helicity_angle_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("dipho_pt_over_mass_", &diPhoPtoM_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("met_", &MetPt_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("dipho_rapidity_", &diPhoY_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("dipho_cosphi_", &diPhoCosPhi_);
+
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("subleadPSV_", &subleadPSV_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("leadPSV_", &leadPSV_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("jet3_btag_", &btag_noBB_3_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("jet3_eta_", &jetEta_3_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("jet3_pt_", &jetPt_3_);
+
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("jet2_btag_", &btag_noBB_2_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("jet2_eta_", &jetEta_2_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("jet2_pt_", &jetPt_2_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("jet1_btag_", &btag_noBB_1_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("jet1_eta_", &jetEta_1_);
+
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("jet1_pt_", &jetPt_1_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("sublead_eta_", &subleadeta_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("lead_eta_", &leadeta_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("subleadptoM_", &subleadptom_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("leadptoM_", &leadptom_);
+
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("ht_", &ht_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("njets_", &nJets_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
+
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("minIDMVA_", &minPhoID_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("maxIDMVA_", &maxPhoID_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("lep_pt_", &lepton_leadPt_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("lep_eta_", &lepton_leadEta_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("n_lep_tight_", &lepton_nTight_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("lep1_charge_", &lep1_charge_);
+
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_neutrino_pz_", &chi2_neutrino_pz_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_tbw_eta_", &chi2_tbw_eta_);
+
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_tbw_deltaR_dipho_", &chi2_tbw_deltaR_dipho_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_qjet_pt_", &chi2_qjet_pt_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_qjet_eta_", &chi2_qjet_eta_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_qjet_btag_", &chi2_qjet_btag_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_qjet_deltaR_dipho_", &chi2_qjet_deltaR_dipho_);
+
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_tqh_ptOverM_", &chi2_tqh_ptOverM_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("dnn_score_fcnc_st_", &fcnc_tag_score_st_);
+        FCNC_BDTNRB_Hct_RunII_->AddVariable("dnn_score_fcnc_tt_", &fcnc_tag_score_tt_);
+
+        // SMH Hut
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("helicity_angle_", &helicity_angle_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("dipho_pt_over_mass_", &diPhoPtoM_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("met_", &MetPt_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("dipho_rapidity_", &diPhoY_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("dipho_cosphi_", &diPhoCosPhi_);
+
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("subleadPSV_", &subleadPSV_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("leadPSV_", &leadPSV_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("jet3_btag_", &btag_noBB_3_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("jet3_eta_", &jetEta_3_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("jet3_pt_", &jetPt_3_);
+
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("jet2_btag_", &btag_noBB_2_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("jet2_eta_", &jetEta_2_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("jet2_pt_", &jetPt_2_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("jet1_btag_", &btag_noBB_1_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("jet1_eta_", &jetEta_1_);
+
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("jet1_pt_", &jetPt_1_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("sublead_eta_", &subleadeta_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("lead_eta_", &leadeta_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("subleadptoM_", &subleadptom_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("leadptoM_", &leadptom_);
+
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("ht_", &ht_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("njets_", &nJets_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
+
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("minIDMVA_", &minPhoID_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("maxIDMVA_", &maxPhoID_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("lep_pt_", &lepton_leadPt_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("lep_eta_", &lepton_leadEta_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("n_lep_tight_", &lepton_nTight_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("lep1_charge_", &lep1_charge_);
+
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_neutrino_pz_", &chi2_neutrino_pz_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_tbw_eta_", &chi2_tbw_eta_);
+
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_tbw_deltaR_dipho_", &chi2_tbw_deltaR_dipho_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_qjet_pt_", &chi2_qjet_pt_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_qjet_eta_", &chi2_qjet_eta_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_qjet_btag_", &chi2_qjet_btag_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_qjet_deltaR_dipho_", &chi2_qjet_deltaR_dipho_);
+
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_tqh_ptOverM_", &chi2_tqh_ptOverM_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("dnn_score_fcnc_st_", &fcnc_tag_score_st_);
+        FCNC_BDTSMH_Hut_RunII_->AddVariable("dnn_score_fcnc_tt_", &fcnc_tag_score_tt_);
+
+        // SMH Hct
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("helicity_angle_", &helicity_angle_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("dipho_pt_over_mass_", &diPhoPtoM_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("met_", &MetPt_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("dipho_rapidity_", &diPhoY_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("dipho_cosphi_", &diPhoCosPhi_);
+
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("subleadPSV_", &subleadPSV_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("leadPSV_", &leadPSV_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("jet3_btag_", &btag_noBB_3_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("jet3_eta_", &jetEta_3_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("jet3_pt_", &jetPt_3_);
+
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("jet2_btag_", &btag_noBB_2_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("jet2_eta_", &jetEta_2_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("jet2_pt_", &jetPt_2_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("jet1_btag_", &btag_noBB_1_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("jet1_eta_", &jetEta_1_);
+
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("jet1_pt_", &jetPt_1_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("sublead_eta_", &subleadeta_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("lead_eta_", &leadeta_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("subleadptoM_", &subleadptom_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("leadptoM_", &leadptom_);
+
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("ht_", &ht_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("njets_", &nJets_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
+
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("minIDMVA_", &minPhoID_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("maxIDMVA_", &maxPhoID_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("lep_pt_", &lepton_leadPt_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("lep_eta_", &lepton_leadEta_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("n_lep_tight_", &lepton_nTight_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("lep1_charge_", &lep1_charge_);
+
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_neutrino_pz_", &chi2_neutrino_pz_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_tbw_eta_", &chi2_tbw_eta_);
+
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_tbw_deltaR_dipho_", &chi2_tbw_deltaR_dipho_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_qjet_pt_", &chi2_qjet_pt_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_qjet_eta_", &chi2_qjet_eta_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_qjet_btag_", &chi2_qjet_btag_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_qjet_deltaR_dipho_", &chi2_qjet_deltaR_dipho_);
+
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_tqh_ptOverM_", &chi2_tqh_ptOverM_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_tqh_eta_", &chi2_tqh_eta_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_tqh_deltaR_tbw_", &chi2_tqh_deltaR_tbw_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("chi2_tqh_deltaR_dipho_", &chi2_tqh_deltaR_dipho_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("dnn_score_fcnc_st_", &fcnc_tag_score_st_);
+        FCNC_BDTSMH_Hct_RunII_->AddVariable("dnn_score_fcnc_tt_", &fcnc_tag_score_tt_);
+
+        // book fcnc mvas
+        FCNC_BDTNRB_Hut_RunII_->BookMVA( "BDT" , fcncHutBDTNRBWeightFile_.fullPath());
+        FCNC_BDTNRB_Hct_RunII_->BookMVA( "BDT" , fcncHctBDTNRBWeightFile_.fullPath());
+        FCNC_BDTSMH_Hut_RunII_->BookMVA( "BDT" , fcncHutBDTSMHWeightFile_.fullPath());
+        FCNC_BDTSMH_Hct_RunII_->BookMVA( "BDT" , fcncHctBDTSMHWeightFile_.fullPath());
+
         if (useLargeMVAs) {
             topTagger = new BDT_resolvedTopTagger(topTaggerXMLfile_.fullPath());
+            fcncTagger = new ANN_LeptonicTopTagger(fcncTaggerXMLfile_tt_.fullPath(), fcncTaggerXMLfile_st_.fullPath());
             dnn = new TTH_DNN_Helper(tthVsttGGDNNfile_.fullPath());
             dnn->SetInputShapes(19, 9, 8);
             dnn->SetPreprocessingSchemes(tthVsttGGDNN_global_mean_, tthVsttGGDNN_global_stddev_, tthVsttGGDNN_object_mean_, tthVsttGGDNN_object_stddev_);
@@ -992,6 +1291,13 @@ namespace flashgg {
                     index+=i;
                     std::pair<unsigned int, float>pairToSort = std::make_pair(index, pt);
                     sorter.push_back( pairToSort );
+
+                    if (useLargeMVAs) {
+                        float lepton_id = Muons[i]->charge() < 0 ? 13. : -13.;
+                        fcncTagger->addMuon(Muons[i]->pt(), Muons[i]->eta(), Muons[i]->phi(), Muons[i]->energy(), lepton_id);
+                        fcncTagger->addLepton(Muons[i]->pt(), Muons[i]->eta(), Muons[i]->phi(), Muons[i]->energy(), lepton_id);
+                    }
+
                     if(debug_) cout<<" muon "<< i <<" pt="<<pt<< endl;
                 }
                 for(unsigned int i=0;i<Electrons.size();i++){
@@ -1000,6 +1306,13 @@ namespace flashgg {
                     index+=i;
                     std::pair<unsigned int, float>pairToSort = std::make_pair(index, pt);
                     sorter.push_back( pairToSort );
+
+                    if (useLargeMVAs) {
+                        float lepton_id = Electrons[i]->charge() < 0 ? 11. : -11.;
+                        fcncTagger->addElectron(Electrons[i]->pt(), Electrons[i]->eta(), Electrons[i]->phi(), Electrons[i]->energy(), lepton_id);
+                        fcncTagger->addLepton(Electrons[i]->pt(), Electrons[i]->eta(), Electrons[i]->phi(), Electrons[i]->energy(), lepton_id);
+                    }
+
                     if(debug_) cout<<" elec "<< i <<" pt="<<pt<< endl;
                 }
                 // sort map by pt
@@ -1056,6 +1369,15 @@ namespace flashgg {
                         evt.getByToken(jetTokens_[jet_syst_idx][i], Jets[i]);
                 }
 
+                if (useLargeMVAs) {
+                    fcncTagger->addPhoton(dipho->leadingPhoton()->pt(), dipho->leadingPhoton()->eta(), dipho->leadingPhoton()->phi(), 0., idmva1);           
+                    fcncTagger->addPhoton(dipho->subLeadingPhoton()->pt(), dipho->subLeadingPhoton()->eta(), dipho->subLeadingPhoton()->phi(), 0., idmva2);           
+                }
+
+                std::vector<TLorentzVector> jets;
+                std::vector<double> btag_scores;
+                std::vector<double> cvsl_scores;
+                std::vector<double> cvsb_scores;
                 for( unsigned int jetIndex = 0; jetIndex < Jets[jetCollectionIndex]->size() ; jetIndex++ )
                 {
                     edm::Ptr<flashgg::Jet> thejet = Jets[jetCollectionIndex]->ptrAt( jetIndex );
@@ -1102,11 +1424,15 @@ namespace flashgg {
                         tagJets.push_back( thejet );
                         float bDiscriminatorValue = -2.;
                         if(bTag_ == "pfDeepCSV") bDiscriminatorValue = thejet->bDiscriminator("pfDeepCSVJetTags:probb")+thejet->bDiscriminator("pfDeepCSVJetTags:probbb") ;
+                        else if (bTag_ == "pfDeepJet") bDiscriminatorValue = thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") ;
                         else  bDiscriminatorValue = thejet->bDiscriminator( bTag_ );
 
                         float bDiscriminatorValue_noBB = -2;
                         if(bTag_ == "pfDeepCSV") bDiscriminatorValue_noBB = thejet->bDiscriminator("pfDeepCSVJetTags:probb");
+                        else if (bTag_ == "pfDeepJet") bDiscriminatorValue_noBB = thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probb");
                         else  bDiscriminatorValue_noBB = thejet->bDiscriminator( bTag_ );
+
+                        btag_scores.push_back(bDiscriminatorValue_noBB);
 
                         bDiscriminatorValue >= 0. ? bTags.push_back(bDiscriminatorValue) : bTags.push_back(-1.);
                         bDiscriminatorValue_noBB >= 0. ? bTags_noBB.push_back(bDiscriminatorValue_noBB) : bTags_noBB.push_back(-1.);
@@ -1117,7 +1443,20 @@ namespace flashgg {
 
                         if( bDiscriminatorValue > bDiscriminator_[1] )
                             tagBJets.push_back( thejet );
-                    
+
+                        float cvsl_value = -2;
+                        if(cTag_ == "pfDeepCSV") cvsl_value = calculate_CvsL(thejet->bDiscriminator("pfDeepCSVJetTags:probc"), thejet->bDiscriminator("pfDeepCSVJetTags:probudsg"));
+                        else if (cTag_ == "pfDeepJet") cvsl_value = calculate_CvsL(thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probc"), thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probuds") + thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probg"));
+                        else  cvsl_value = thejet->bDiscriminator( cTag_ );
+                        cvsl_scores.push_back(cvsl_value);
+    
+                        float cvsb_value = -2;
+                        if(cTag_ == "pfDeepCSV") cvsb_value = calculate_CvsB(thejet->bDiscriminator("pfDeepCSVJetTags:probc"), thejet->bDiscriminator("pfDeepCSVJetTags:probb"), thejet->bDiscriminator("pfDeepCSVJetTags:probbb"));
+                        else if (cTag_ == "pfDeepJet") cvsb_value = calculate_CvsB(thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probc"), thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probb"), thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probbb"));
+                        else  cvsb_value = thejet->bDiscriminator( cTag_ );
+                        cvsb_scores.push_back(cvsb_value);
+    
+                        float bDisc_topTagger = thejet->bDiscriminator("pfDeepCSVJetTags:probb")+thejet->bDiscriminator("pfDeepCSVJetTags:probbb");                    
                         if (useLargeMVAs) {
                           float cvsl = thejet->bDiscriminator("pfDeepCSVJetTags:probc") + thejet->bDiscriminator("pfDeepCSVJetTags:probudsg") ;
                           float cvsb = thejet->bDiscriminator("pfDeepCSVJetTags:probc") + thejet->bDiscriminator("pfDeepCSVJetTags:probb")+thejet->bDiscriminator("pfDeepCSVJetTags:probbb") ;
@@ -1125,7 +1464,8 @@ namespace flashgg {
                           float axis1 = thejet->userFloat("axis1") ;
                           int mult = thejet->userFloat("totalMult") ;
 
-                          topTagger->addJet(thejet->pt(), thejet->eta(), thejet->phi(), thejet->mass(), bDiscriminatorValue, cvsl, cvsb, ptD, axis1, mult);
+                          topTagger->addJet(thejet->pt(), thejet->eta(), thejet->phi(), thejet->mass(), bDisc_topTagger, cvsl, cvsb, ptD, axis1, mult);
+                          fcncTagger->addJet(thejet->pt(), thejet->eta(), thejet->phi(), thejet->mass(), bDiscriminatorValue);           
                         }
 
                     }
@@ -1143,8 +1483,10 @@ namespace flashgg {
                 // Set variables to compute MVA value
                 if(tagJets.size()>0){
                     if(bTag_ == "pfDeepCSV") btag_1_=tagJets[0]->bDiscriminator("pfDeepCSVJetTags:probb")+tagJets[0]->bDiscriminator("pfDeepCSVJetTags:probbb") ;
+                    else if (bTag_ == "pfDeepJet") btag_1_ = tagJets[0]->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+tagJets[0]->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") ;
                     else  btag_1_ = tagJets[0]->bDiscriminator( bTag_ );
                     if(bTag_ == "pfDeepCSV") btag_noBB_1_=tagJets[0]->bDiscriminator("pfDeepCSVJetTags:probb");
+                    else if (bTag_ == "pfDeepJet") btag_noBB_1_ = tagJets[0]->bDiscriminator("mini_pfDeepFlavourJetTags:probb");
                     else  btag_noBB_1_ = tagJets[0]->bDiscriminator( bTag_ );
                     jetPt_1_=tagJets[0]->pt();
                     jetEta_1_=tagJets[0]->eta();
@@ -1153,8 +1495,10 @@ namespace flashgg {
 
                 if(tagJets.size()>1){
                     if(bTag_ == "pfDeepCSV") btag_2_=tagJets[1]->bDiscriminator("pfDeepCSVJetTags:probb")+tagJets[1]->bDiscriminator("pfDeepCSVJetTags:probbb") ;
+                    else if (bTag_ == "pfDeepJet") btag_2_ = tagJets[1]->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+tagJets[1]->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") ;
                     else  btag_2_ = tagJets[1]->bDiscriminator( bTag_ );
                     if(bTag_ == "pfDeepCSV") btag_noBB_2_=tagJets[1]->bDiscriminator("pfDeepCSVJetTags:probb");
+                    else if (bTag_ == "pfDeepJet") btag_noBB_2_ = tagJets[1]->bDiscriminator("mini_pfDeepFlavourJetTags:probb");
                     else  btag_noBB_2_ = tagJets[1]->bDiscriminator( bTag_ );
                     jetPt_2_=tagJets[1]->pt();
                     jetEta_2_=tagJets[1]->eta();
@@ -1163,8 +1507,10 @@ namespace flashgg {
 
                 if(tagJets.size()>2){
                     if(bTag_ == "pfDeepCSV") btag_3_=tagJets[2]->bDiscriminator("pfDeepCSVJetTags:probb")+tagJets[2]->bDiscriminator("pfDeepCSVJetTags:probbb") ;
+                    else if (bTag_ == "pfDeepJet") btag_3_ = tagJets[2]->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+tagJets[2]->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") ;
                     else  btag_3_ = tagJets[2]->bDiscriminator( bTag_ );
                     if(bTag_ == "pfDeepCSV") btag_noBB_3_=tagJets[2]->bDiscriminator("pfDeepCSVJetTags:probb");
+                    else if (bTag_ == "pfDeepJet") btag_noBB_3_ = tagJets[2]->bDiscriminator("mini_pfDeepFlavourJetTags:probb");
                     else  btag_noBB_3_ = tagJets[2]->bDiscriminator( bTag_ );
                     jetPt_3_=tagJets[2]->pt();
                     jetEta_3_=tagJets[2]->eta();
@@ -1193,6 +1539,9 @@ namespace flashgg {
                 leadIDMVA_ = dipho->leadingPhoton()->phoIdMvaDWrtVtx( dipho->vtx() );
                 subleadIDMVA_ = dipho->subLeadingPhoton()->phoIdMvaDWrtVtx( dipho->vtx() );
                 deltaphi_ = deltaPhi( dipho->leadingPhoton()->phi(), dipho->subLeadingPhoton()->phi() );
+                // FIXME: inverting PSV for ttZ region
+                //leadPSV_ = 0;
+                //subleadPSV_ = 0;
                 leadPSV_ = dipho->leadingPhoton()->hasPixelSeed();
                 subleadPSV_ = dipho->subLeadingPhoton()->hasPixelSeed();
                 nJets_ = njet_;
@@ -1260,10 +1609,16 @@ namespace flashgg {
                 MetPt_ = theMet_->ptrAt( 0 ) -> getCorPt();
                 MetPhi_ = theMet_->ptrAt( 0 ) -> phi();
 
+                if (useLargeMVAs) {
+                    fcncTagger->addMet(MetPt_, MetPhi_);
+                }
+
                 TLorentzVector pho1, pho2;
                 pho1.SetPtEtaPhiE(dipho->leadingPhoton()->pt(), dipho->leadingPhoton()->eta(), dipho->leadingPhoton()->phi(), dipho->leadingPhoton()->energy());
                 pho2.SetPtEtaPhiE(dipho->subLeadingPhoton()->pt(), dipho->subLeadingPhoton()->eta(), dipho->subLeadingPhoton()->phi(), dipho->subLeadingPhoton()->energy());
                 helicity_angle_ = helicity(pho1, pho2);
+
+                TLorentzVector diphoton = pho1 + pho2;
 
                 std::vector<double> global_features;
                 global_features.resize(19);
@@ -1313,10 +1668,22 @@ namespace flashgg {
                 }
 
                 vector<float> mvaEval; 
+                vector<float> mvaEval_tt; 
+                vector<float> mvaEval_st; 
                 if (useLargeMVAs) {
                     mvaEval = topTagger->EvalMVA();
+                    mvaEval_tt = fcncTagger->EvalMVA_tt();
+                    mvaEval_st = fcncTagger->EvalMVA_st();
                     topTagger->clear();
+                    fcncTagger->clear();
                 }
+                
+                top_tag_score_ = mvaEval.size() > 0 ? (mvaEval[0] != - 99 ? mvaEval[0] : -1) : - 1;
+                fcnc_tag_score_tt_ = mvaEval_tt.size() > 0 ? (mvaEval_tt[0] != - 99 ? mvaEval_tt[0] : -1) : - 1;
+                fcnc_tag_score_st_ = mvaEval_st.size() > 0 ? (mvaEval_st[0] != - 99 ? mvaEval_st[0] : -1) : - 1;
+                TLorentzVector leading_electron;
+                TLorentzVector leading_muon;
+                TLorentzVector leading_lepton;
 
                 int leadMuIndex = 0;
                 float leadMuPt = -1;
@@ -1331,6 +1698,7 @@ namespace flashgg {
                     {
                         leadMuPt = muon->pt();
                         leadMuIndex = muonIndex;
+                        leading_muon.SetPtEtaPhiE(muon->pt(), muon->eta(), muon->phi(), muon->energy());
                     }
                 }
 
@@ -1342,6 +1710,7 @@ namespace flashgg {
                     {
                         leadElePt = ele->pt();
                         leadEleIndex = eleIndex;
+                        leading_electron.SetPtEtaPhiE(ele->pt(), ele->eta(), ele->phi(), ele->energy());
                     }
                 }
 
@@ -1349,16 +1718,71 @@ namespace flashgg {
                 {
                     lepton_leadPt_ = Muons[leadMuIndex]->pt();
                     lepton_leadEta_ = Muons[leadMuIndex]->eta();
+                    lep1_charge_ = Muons[leadMuIndex]->charge();
+                    leading_lepton = leading_muon;
                 }
                 else
                 {
                     lepton_leadPt_ = Electrons[leadEleIndex]->pt();
                     lepton_leadEta_ = Electrons[leadEleIndex]->eta();
+                    lep1_charge_ = Electrons[leadEleIndex]->charge();
+                    leading_lepton = leading_electron;
                 }
+
+                //------------------------------//
+                //#quadratic equation related
+                vector<int> indices_bjet = get_bjet_indices(jets, btag_scores);
+                bool is_moreThanTwoJets_and_atLeastOneBjet = jets.size() > 2 && indices_bjet.size() > 0;
+                bool is_moreThanOneJets_and_atLeastOneBjet = jets.size() > 1 && indices_bjet.size() > 0;
+                // init reco leading lepton and MET
+                TLorentzVector lepton = leading_lepton; // leading lepton
+                float met_pt    = MetPt_;
+                float met_px    = MetPt_ * TMath::Cos(MetPhi_);
+                float met_py    = MetPt_ * TMath::Sin(MetPhi_);
+                vector<double> met_info = { met_pt, met_px, met_py };
+                // 4-vectors
+                double neutrino_pz           = evaluate_neutrino_pz(lepton, met_info);
+                TLorentzVector reco_neutrino = derive_reco_neutrino(lepton, met_info);
+                TLorentzVector reco_wboson   = derive_reco_wboson(lepton, reco_neutrino);
+
+                TLorentzVector _nothing_;
+                int index_bjet               = std::max_element(btag_scores.begin(), btag_scores.end()) - btag_scores.begin();
+                TLorentzVector bjet          = is_moreThanOneJets_and_atLeastOneBjet ? jets[index_bjet]                   : _nothing_;
+                TLorentzVector reco_tbw      = is_moreThanOneJets_and_atLeastOneBjet ? derive_reco_tbw(reco_wboson, bjet) : _nothing_;
+
+                int index_q                  = get_q_index_min_chi2(jets, index_bjet, diphoton);
+                TLorentzVector chi2_qjet = is_moreThanTwoJets_and_atLeastOneBjet ? jets[index_q]                      : _nothing_;
+                TLorentzVector chi2_tqh  = is_moreThanTwoJets_and_atLeastOneBjet ? chi2_qjet + diphoton           : _nothing_;
+                // variables
+                chi2_neutrino_pz_        = neutrino_pz;
+                chi2_tbw_mass_           = is_moreThanOneJets_and_atLeastOneBjet ? reco_tbw.M()               : -999.;
+                chi2_tbw_pt_             = is_moreThanOneJets_and_atLeastOneBjet ? reco_tbw.Pt()              : -999.;
+                chi2_tbw_eta_            = is_moreThanOneJets_and_atLeastOneBjet ? reco_tbw.Eta()             : -999.;
+                chi2_tbw_deltaR_dipho_   = is_moreThanOneJets_and_atLeastOneBjet ? reco_tbw.DeltaR(diphoton)  : -999.;
+                chi2_qjet_pt_            = is_moreThanTwoJets_and_atLeastOneBjet ? chi2_qjet.Pt()             : -999.;
+                chi2_qjet_eta_           = is_moreThanTwoJets_and_atLeastOneBjet ? chi2_qjet.Eta()            : -999.;
+                chi2_qjet_btag_          = is_moreThanTwoJets_and_atLeastOneBjet ? btag_scores[index_q]       : -999.;
+                chi2_qjet_deltaR_dipho_  = is_moreThanTwoJets_and_atLeastOneBjet ? chi2_qjet.DeltaR(diphoton) : -999.;
+                chi2_tqh_ptOverM_        = is_moreThanTwoJets_and_atLeastOneBjet ? chi2_tqh.Pt()/chi2_tqh.M() : -999.;
+                chi2_tqh_eta_            = is_moreThanTwoJets_and_atLeastOneBjet ? chi2_tqh.Eta()             : -999.;
+                chi2_tqh_deltaR_tbw_     = is_moreThanTwoJets_and_atLeastOneBjet ? chi2_tqh.DeltaR(reco_tbw)  : -999.;
+                chi2_tqh_deltaR_dipho_   = is_moreThanTwoJets_and_atLeastOneBjet ? chi2_tqh.DeltaR(diphoton)  : -999.;
+                chi2_bjet_CvsL_   = is_moreThanTwoJets_and_atLeastOneBjet ? cvsl_scores[index_bjet]           : -999.;
+                chi2_qjet_CvsL_   = is_moreThanTwoJets_and_atLeastOneBjet ? cvsl_scores[index_q]              : -999.;
+                chi2_bjet_CvsB_   = is_moreThanTwoJets_and_atLeastOneBjet ? cvsb_scores[index_bjet]           : -999.;
+                chi2_qjet_CvsB_   = is_moreThanTwoJets_and_atLeastOneBjet ? cvsb_scores[index_q]              : -999.;
+                //------------------------------//
+
 
                 float mvaValue = DiphotonMva_-> EvaluateMVA( "BDT" );
 
                 tthMvaVal_RunII_ = convert_tmva_to_prob(TThMva_RunII_->EvaluateMVA( "BDT" ));
+
+                fcncMvaVal_NRB_Hut_ = convert_tmva_to_prob(FCNC_BDTNRB_Hut_RunII_->EvaluateMVA( "BDT" ));
+                fcncMvaVal_NRB_Hct_ = convert_tmva_to_prob(FCNC_BDTNRB_Hct_RunII_->EvaluateMVA( "BDT" ));
+                fcncMvaVal_SMH_Hut_ = convert_tmva_to_prob(FCNC_BDTSMH_Hut_RunII_->EvaluateMVA( "BDT" ));
+                fcncMvaVal_SMH_Hct_ = convert_tmva_to_prob(FCNC_BDTSMH_Hct_RunII_->EvaluateMVA( "BDT" ));
+
                 if (debug_) {
                   cout << "TTH Leptonic Tag -- input MVA variables for Run II MVA: " << endl;
                   cout << "--------------------------------------------------------" << endl;
@@ -1400,6 +1824,7 @@ namespace flashgg {
                   cout << "lep_pt_: " << lepton_leadPt_ << endl;
                   cout << "lep_eta_: " << lepton_leadEta_ << endl;
                   cout << "n_lep_tight_: " << lepton_nTight_ << endl;
+                  cout << "lep1_charge_: " << lep1_charge_ << endl;
 
                   cout << "lep1_charge: " << lep1_charge << endl;
                   cout << "lep2_charge: " << lep2_charge << endl;
@@ -1423,10 +1848,10 @@ namespace flashgg {
 
               mvaValue = tthMvaVal_RunII_; // use Run II MVA for categorization
 
-                //int catNumber = -1;
-                //catNumber = chooseCategory( mvaValue , debug_);  
-                int catNumber_pt = -1;
-                catNumber_pt = chooseCategory_pt( mvaValue , dipho->pt());  
+                int catNumber = -1;
+                catNumber = chooseCategory( mvaValue , debug_);  
+                //int catNumber_pt = -1;
+                //catNumber_pt = chooseCategory_pt( mvaValue , dipho->pt());  
 
                 if(debug_)
                     cout << "I'm going to check selections, mva value: " << mvaValue << endl;
@@ -1466,23 +1891,17 @@ namespace flashgg {
                     cout << "MetPt " << MetPt_ << endl;
                     cout << "Lepton pT and Eta " << lepton_leadPt_ << " " << lepton_leadEta_ << endl;
                     cout << "--------------------------------------" << endl;
-                    cout << "TTHLeptonicTag -- output MVA value " << mvaValue << " " << DiphotonMva_-> EvaluateMVA( "BDT" ) << ", category " << catNumber_pt << endl;
+                    cout << "TTHLeptonicTag -- output MVA value " << mvaValue << " " << DiphotonMva_-> EvaluateMVA( "BDT" ) << ", category " << catNumber << endl;
                 }
 
-                if(catNumber_pt!=-1)
+                if(catNumber!=-1)
                 {
                     TTHLeptonicTag tthltags_obj( dipho, mvares );
-                    tthltags_obj.setCategoryNumber(catNumber_pt);
+                    tthltags_obj.setCategoryNumber(catNumber);
                     //tthltags_obj.setCategoryNumber(catNumber);
 
                     int chosenTag = computeStage1Kinematics( tthltags_obj );
                     tthltags_obj.setStage1recoTag( chosenTag );
-
-                    for( unsigned int i = 0; i < tagJets.size(); ++i )
-                    {
-                        tthltags_obj.includeWeightsByLabel( *tagJets[i] , "JetBTagReshapeWeight");
-                    }
-
 
                     for( unsigned int i = 0; i < Muons.size(); ++i )
                         tthltags_obj.includeWeights( *Muons.at(i));
@@ -1490,7 +1909,14 @@ namespace flashgg {
                     for( unsigned int i = 0; i < Electrons.size(); ++i )
                         tthltags_obj.includeWeights( *Electrons.at(i));
 
+
                     tthltags_obj.includeWeights( *dipho );
+                    for( unsigned int i = 0; i < tagJets.size(); ++i )
+                        tthltags_obj.includeWeightsByLabel( *tagJets[i] , "JetBTagReshapeWeight", false);
+                    for( unsigned int i = 0; i < tagJets.size(); ++i )
+                        tthltags_obj.includeWeightsByLabel( *tagJets[i] , "JetCTagReshapeWeight", false);
+
+
                     tthltags_obj.setJets( tagJets );
                     tthltags_obj.setMuons( Muons );
                     tthltags_obj.setElectrons( Electrons );
@@ -1498,11 +1924,20 @@ namespace flashgg {
                     std::string syst_label = modifySystematicsWorkflow ? systematicsLabels[syst_idx] : systLabel_;
                     tthltags_obj.setSystLabel( syst_label );
                     tthltags_obj.setMvaRes(mvaValue);
+                    tthltags_obj.setMva_RunII_Res(tthMvaVal_RunII_);
                     tthltags_obj.setLepPt( lepPt );
                     tthltags_obj.setLepE( lepE );
                     tthltags_obj.setLepEta( lepEta );
                     tthltags_obj.setLepPhi( lepPhi );
                     tthltags_obj.setLepType( lepType );
+
+                    tthltags_obj.set_fcnc_bdt_nrb_hut_score(fcncMvaVal_NRB_Hut_);
+                    tthltags_obj.set_fcnc_bdt_nrb_hct_score(fcncMvaVal_NRB_Hct_);
+                    tthltags_obj.set_fcnc_bdt_smh_hut_score(fcncMvaVal_SMH_Hut_);
+                    tthltags_obj.set_fcnc_bdt_smh_hct_score(fcncMvaVal_SMH_Hct_);
+
+                    tthltags_obj.setDNNScoreFCNCTT(fcnc_tag_score_tt_);
+                    tthltags_obj.setDNNScoreFCNCST(fcnc_tag_score_st_);
 
                     tthltags_obj.setLeadPrompt(-999);
                     tthltags_obj.setLeadMad(-999);
@@ -1523,7 +1958,188 @@ namespace flashgg {
                     tthltags_obj.setSubleadMomID(-999);
                     tthltags_obj.setSubleadMomMomID(-999);
                     tthltags_obj.setSubleadSmallestDr(-999);
-                                
+
+                    if( ! evt.isRealData() ) {
+                    evt.getByToken( genParticleToken_, genParticles );
+                    int nGoodEls(0), nGoodMus(0), nGoodElsFromTau(0), nGoodMusFromTau(0), nGoodTaus(0);
+                    for( unsigned int genLoop = 0 ; genLoop < genParticles->size(); genLoop++ ) {
+                        int pdgid = genParticles->ptrAt( genLoop )->pdgId();
+                        double pt = genParticles->ptrAt( genLoop )->p4().pt();
+                        int status = genParticles->ptrAt( genLoop )->status();
+                        bool isPromptFinalState = genParticles->ptrAt( genLoop )->isPromptFinalState();
+                        bool isPromptDecayed = genParticles->ptrAt( genLoop )->isPromptDecayed();
+                        bool isDirectPromptTauDecayProductFinalState = genParticles->ptrAt( genLoop )->isDirectPromptTauDecayProductFinalState();
+                        if (pt < 20) continue;
+                        if (abs(pdgid) == 11 || abs(pdgid) == 13 || abs(pdgid) == 15) {
+                            //cout << "Found a gen lepton/tau with pT > 20" << endl;
+                            //cout << "pdgid: " << pdgid << endl;
+                            //cout << "pt: " << pt << endl;
+                            //cout << "status: " << status << endl;
+                            //cout << "isPromptFinalState: " << isPromptFinalState << endl;
+                            //cout << "isPromptDecayed: " << isPromptDecayed << endl;
+                            //cout << "isDirectPromptTauDecayProductFinalState: " << isDirectPromptTauDecayProductFinalState << endl;
+                        }
+                        if (abs(pdgid) == 11 && status == 1 && (isPromptFinalState || isDirectPromptTauDecayProductFinalState)) {
+                            nGoodEls++;
+                            if (isDirectPromptTauDecayProductFinalState)
+                                nGoodElsFromTau++;
+                        }
+                        else if (abs(pdgid) == 13 && status == 1 && (isPromptFinalState || isDirectPromptTauDecayProductFinalState)) {
+                            nGoodMus++;
+                            if (isDirectPromptTauDecayProductFinalState)
+                                nGoodMusFromTau++;
+                        }
+                        if (abs(pdgid) == 15 && status == 2 && isPromptDecayed) {
+                            nGoodTaus++;
+                        }
+                    }
+                    bool lead_photon_is_electron(false), sublead_photon_is_electron(false);
+                    double lead_photon_eta = dipho->leadingPhoton()->eta();
+                    double lead_photon_phi = dipho->leadingPhoton()->phi();
+                    double sublead_photon_eta = dipho->subLeadingPhoton()->eta();
+                    double sublead_photon_phi = dipho->subLeadingPhoton()->phi();
+                    for( unsigned int genLoop = 0 ; genLoop < genParticles->size(); genLoop++ ) {
+                        int pdgid = genParticles->ptrAt( genLoop )->pdgId();
+                        if (abs(pdgid) != 11) continue;
+                        if (genParticles->ptrAt( genLoop )->p4().pt() < 15) continue;
+                        if (!genParticles->ptrAt( genLoop )->isPromptFinalState()) continue;
+                        double electron_eta = genParticles->ptrAt( genLoop )->p4().eta();
+                        double electron_phi = genParticles->ptrAt( genLoop )->p4().phi();
+
+                        double deltaR_lead = deltaR(electron_eta, electron_phi, lead_photon_eta, lead_photon_phi);
+                        double deltaR_sublead = deltaR(electron_eta, electron_phi, sublead_photon_eta, sublead_photon_phi);
+
+                        //cout << "Delta R with leading photon: " << deltaR_lead << endl;
+                        //cout << "Delta R with subleading photon: " << deltaR_sublead << endl;
+
+                        const double deltaR_thresh = 0.1;
+                        if (deltaR_lead < deltaR_thresh)
+                            lead_photon_is_electron = true;
+                        if (deltaR_sublead < deltaR_thresh)
+                            sublead_photon_is_electron = true;
+
+                    } // end gen loop
+     
+                    int lead_photon_type;
+                    if (dipho->leadingPhoton()->genMatchType() != 1) { // fake
+                        if (!lead_photon_is_electron)
+                            lead_photon_type = 3;   // fake
+                        else
+                            lead_photon_type = 2;   // fake from  electron 
+                    }
+                    else
+                        lead_photon_type = 1; // prompt
+                    int sublead_photon_type;
+                    if (dipho->subLeadingPhoton()->genMatchType() != 1) { // fake
+                        if (!sublead_photon_is_electron)
+                            sublead_photon_type = 3;   // fake
+                        else
+                            sublead_photon_type = 2;   // fake from  electron 
+                    }
+                    else
+                        sublead_photon_type = 1; // prompt
+
+                    // Do our own gen-matching
+                    double lead_photon_closest_match = dipho->leadingPhoton()->genMatchType() == 1 ? deltaR(lead_photon_eta, lead_photon_phi, dipho->leadingPhoton()->matchedGenPhoton()->eta(), dipho->leadingPhoton()->matchedGenPhoton()->phi()) : 999;
+                    double sublead_photon_closest_match = dipho->subLeadingPhoton()->genMatchType() == 1 ? deltaR(sublead_photon_eta, sublead_photon_phi, dipho->subLeadingPhoton()->matchedGenPhoton()->eta(), dipho->subLeadingPhoton()->matchedGenPhoton()->phi()) : 999;
+
+                    //double lead_photon_closest_match = dipho->leadingPhoton()->genMatchType() == 1 ? sqrt( pow(lead_photon_eta - dipho->leadingPhoton()->matchedGenPhoton()->eta(), 2) + pow(lead_photon_phi - dipho->leadingPhoton()->matchedGenPhoton()->phi(), 2)) : 999;
+                    //double sublead_photon_closest_match = dipho->subLeadingPhoton()->genMatchType() == 1 ? sqrt( pow(sublead_photon_eta - dipho->subLeadingPhoton()->matchedGenPhoton()->eta(), 2) + pow(sublead_photon_phi - dipho->subLeadingPhoton()->matchedGenPhoton()->phi(), 2)) : 999;
+                    double lead_photon_closest_match_pt = dipho->leadingPhoton()->genMatchType() == 1 ? dipho->leadingPhoton()->pt() : -1;
+                    double sublead_photon_closest_match_pt = dipho->subLeadingPhoton()->genMatchType() == 1 ? dipho->subLeadingPhoton()->pt() : -1;
+
+                    for( unsigned int genLoop = 0 ; genLoop < genParticles->size(); genLoop++ ) {
+                        int pdgid = genParticles->ptrAt( genLoop )->pdgId();
+                        if (abs(pdgid) != 22) continue;
+                        if (genParticles->ptrAt( genLoop )->p4().pt() < 10) continue;
+                        if (!genParticles->ptrAt( genLoop )->isPromptFinalState()) continue;
+                        double gen_photon_candidate_eta = genParticles->ptrAt( genLoop )->p4().eta();
+                        double gen_photon_candidate_phi = genParticles->ptrAt( genLoop )->p4().phi();
+
+
+                        double deltaR_lead = deltaR(gen_photon_candidate_eta, gen_photon_candidate_phi, lead_photon_eta, lead_photon_phi);
+                        //double deltaR_lead = sqrt( pow(gen_photon_candidate_eta - lead_photon_eta, 2) + pow(gen_photon_candidate_phi - lead_photon_phi, 2));
+                        double deltaR_sublead = deltaR(gen_photon_candidate_eta, gen_photon_candidate_phi, sublead_photon_eta, sublead_photon_phi);
+                        //double deltaR_sublead = sqrt( pow(gen_photon_candidate_eta - sublead_photon_eta, 2) + pow(gen_photon_candidate_phi - sublead_photon_phi, 2));
+
+                        if (deltaR_lead < lead_photon_closest_match) {
+                            lead_photon_closest_match = deltaR_lead;
+                            lead_photon_closest_match_pt = genParticles->ptrAt( genLoop )->p4().pt();
+                        }
+                        if (deltaR_sublead < sublead_photon_closest_match) {
+                            sublead_photon_closest_match = deltaR_sublead;
+                            sublead_photon_closest_match_pt = genParticles->ptrAt( genLoop )->p4().pt();
+                        }
+                    } // end gen loop
+                    string lead_fake = dipho->leadingPhoton()->genMatchType() == 1 ? "prompt" : "fake";
+                    //cout << "Leading photon is " << lead_fake << ". Closest match:" << lead_photon_closest_match << endl;
+
+                    string sublead_fake = dipho->subLeadingPhoton()->genMatchType() == 1 ? "prompt" : "fake";
+                    //cout << "Subleading photon is " << sublead_fake << ". Closest match:" << sublead_photon_closest_match << endl;                     
+
+                    tthltags_obj.setnGoodEls(nGoodEls);
+                    tthltags_obj.setnGoodElsFromTau(nGoodElsFromTau);
+                    tthltags_obj.setnGoodMus(nGoodMus);
+                    tthltags_obj.setnGoodMusFromTau(nGoodMusFromTau);
+                    tthltags_obj.setnGoodTaus(nGoodTaus);
+                    tthltags_obj.setLeadPhotonType(lead_photon_type);
+                    tthltags_obj.setSubleadPhotonType(sublead_photon_type);
+                    tthltags_obj.setLeadPhotonClosestDeltaR(lead_photon_closest_match);
+                    tthltags_obj.setSubleadPhotonClosestDeltaR(sublead_photon_closest_match);
+                    tthltags_obj.setLeadPhotonClosestPt(lead_photon_closest_match_pt);
+                    tthltags_obj.setSubleadPhotonClosestPt(sublead_photon_closest_match_pt);
+                }
+                else {
+                    tthltags_obj.setnGoodEls(-1);
+                    tthltags_obj.setnGoodElsFromTau(-1);
+                    tthltags_obj.setnGoodMus(-1);
+                    tthltags_obj.setnGoodMusFromTau(-1);
+                    tthltags_obj.setnGoodTaus(-1);
+                    tthltags_obj.setLeadPhotonType(-1);
+                    tthltags_obj.setSubleadPhotonType(-1);
+                    tthltags_obj.setLeadPhotonClosestDeltaR(-1);
+                    tthltags_obj.setSubleadPhotonClosestDeltaR(-1);
+                    tthltags_obj.setLeadPhotonClosestPt(-1);
+                    tthltags_obj.setSubleadPhotonClosestPt(-1);
+                }
+
+
+                tthltags_obj.setRand(myRandLeptonic->Rndm());
+                tthltags_obj.setMT( sqrt(2 * lepton_leadPt_ * MetPt_ * ( 1 - cos( lepton_leadPhi_ - MetPhi_ ) ) ) );
+                tthltags_obj.setMetPt(MetPt_);
+                tthltags_obj.setMetPhi(MetPhi_);
+
+
+                if (mvaEval.size() > 0) {
+                  tthltags_obj.setTopTagScore(mvaEval[0] != -99 ? mvaEval[0] : -1);
+                  tthltags_obj.setTopTagTopMass(mvaEval[4]);
+                  tthltags_obj.setTopTagWMass(mvaEval[8]);
+                } else
+                  {
+                  tthltags_obj.setTopTagScore(-999);
+                  tthltags_obj.setTopTagTopMass(-999);
+                  tthltags_obj.setTopTagWMass(-999);
+                  }
+
+                tthltags_obj.setNBLoose( njets_btagloose_ );
+                tthltags_obj.setNBMedium( njets_btagmedium_ );
+                tthltags_obj.setNBTight( njets_btagtight_ );
+
+                tthltags_obj.setNMuonLoose( -1 );
+                tthltags_obj.setNMuonMedium( Muons.size() );
+                tthltags_obj.setNMuonTight( MuonsTight.size() );
+
+                tthltags_obj.setNElecLoose( -1 );
+                tthltags_obj.setNElecMedium( Electrons.size() );
+                tthltags_obj.setNElecTight( ElectronsTight.size() );
+
+                tthltags_obj.setMuonLeadIso( Muons.size() > 0 ? (Muons[0]->pfIsolationR04().sumChargedHadronPt + max(0., Muons[0]->pfIsolationR04().sumNeutralHadronEt + Muons[0]->pfIsolationR04().sumPhotonEt - 0.5*Muons[0]->pfIsolationR04().sumPUPt)) : -999);
+                tthltags_obj.setMuonSubleadIso( Muons.size() > 1 ? (Muons[1]->pfIsolationR04().sumChargedHadronPt + max(0., Muons[1]->pfIsolationR04().sumNeutralHadronEt + Muons[1]->pfIsolationR04().sumPhotonEt - 0.5*Muons[1]->pfIsolationR04().sumPUPt)) : -999);
+                    
+
+                tthltags_obj.setDNNScorettHVsTtgg(dnn_score_0_);
+
+
                     tthltags->push_back( tthltags_obj );
             
                     if( ! evt.isRealData() )

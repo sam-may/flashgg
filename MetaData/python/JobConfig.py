@@ -219,7 +219,8 @@ class JobConfig(object):
         ## this allows to use VarParsing methods on JobConfig
         if hasattr(self.options,name):
             return getattr(self.options,name)
-        
+
+        print "Do not have %s" % name
         raise AttributeError
     
     def __call__(self,process):

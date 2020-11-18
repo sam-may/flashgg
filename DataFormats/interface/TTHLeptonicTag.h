@@ -48,7 +48,62 @@ namespace flashgg {
         int subleadMomMomID() const { return sublead_motherMotherID_; }
         int subleadPassFrix() const { return sublead_passFrix_; }
         double subleadSmallestDr() const { return sublead_smallestDr_; }
-        
+
+        int nBLoose() const {return Nbtagloose_;}
+        int nBMedium() const {return Nbtagmedium_;}
+        int nBTight() const {return Nbtagtight_;}
+
+        int nMuonLoose() const {return NMuonloose_;}
+        int nMuonMedium() const {return NMuonmedium_;}
+        int nMuonTight() const {return NMuontight_;}
+
+        int nElecLoose() const {return NElecloose_;}
+        int nElecMedium() const {return NElecmedium_;}
+        int nElecTight() const {return NElectight_;}
+
+        float muonLeadIso() const {return muonLeadIso_;}
+        float muonSubleadIso() const {return muonSubleadIso_;}
+
+        float MetPt() const {return MetPt_;}
+        float MetPhi() const {return MetPhi_;}
+        float MT() const {return mT_;}
+        int nGoodEls() const {return nGoodEls_;}
+        int nGoodElsFromTau() const {return nGoodElsFromTau_;}
+        int nGoodMus() const {return nGoodMus_;}
+        int nGoodMusFromTau() const {return nGoodMusFromTau_;}
+        int nGoodTaus() const {return nGoodTaus_;}
+
+        float diphoMVARes() const { return diphoMVARes_; }
+        int leadPhotonType() const { return leadPhotonType_; }
+        int subleadPhotonType() const { return subleadPhotonType_; }
+
+        double leadPhotonClosestDeltaR() const { return leadPhotonClosestDeltaR_; }
+        double subleadPhotonClosestDeltaR() const { return subleadPhotonClosestDeltaR_; }
+        double leadPhotonClosestPt() const { return leadPhotonClosestPt_; }
+        double subleadPhotonClosestPt() const { return subleadPhotonClosestPt_; }
+        double rand() const { return rand_; }
+
+        float topTagScore() const { return topTagScore_; }
+        float topTagTopMass() const { return topTagTopMass_; }
+        float topTagWMass() const { return topTagWMass_; }
+
+        double leadPhoGenPt() const { return leadPhoGenPt_; }
+        double leadPhoGenEta() const { return leadPhoGenEta_; }
+        double leadPhoGenPhi() const { return leadPhoGenPhi_; }
+        double subleadPhoGenPt() const { return subleadPhoGenPt_; }
+        double subleadPhoGenEta() const { return subleadPhoGenEta_; }
+        double subleadPhoGenPhi() const { return subleadPhoGenPhi_; }
+
+        double dnn_score_ttH_vs_ttgg() const { return dnn_score_ttH_vs_ttgg_; }
+
+        double dnn_score_fcnc_tt() const { return dnn_score_fcnc_tt_; }
+        double dnn_score_fcnc_st() const { return dnn_score_fcnc_st_; } 
+
+        double fcnc_bdt_nrb_hut_score() const { return fcnc_bdt_nrb_hut_score_; }
+        double fcnc_bdt_smh_hut_score() const { return fcnc_bdt_smh_hut_score_; }
+        double fcnc_bdt_nrb_hct_score() const { return fcnc_bdt_nrb_hct_score_; }
+        double fcnc_bdt_smh_hct_score() const { return fcnc_bdt_smh_hct_score_; }
+
         void setJets( std::vector<edm::Ptr<Jet> > Jets ) { Jets_ = Jets; }
         void setBJets( std::vector<edm::Ptr<Jet> > BJets )  { BJets_ = BJets;}
         void setMuons( std::vector<edm::Ptr<Muon> > Muons ) {Muons_ = Muons;}
@@ -78,10 +133,68 @@ namespace flashgg {
         void setSubleadPassFrix(int sublead_passFrix) { sublead_passFrix_ = sublead_passFrix; }
         void setSubleadSmallestDr(double sublead_smallestDr) { sublead_smallestDr_ = sublead_smallestDr; }
 
+        void setNBLoose( int nb ) { Nbtagloose_ = nb; }
+        void setNBMedium( int nb ) { Nbtagmedium_ = nb; }
+        void setNBTight( int nb ) { Nbtagtight_ = nb; }
+
+        void setNMuonLoose( int nb ) { NMuonloose_ = nb; }
+        void setNMuonMedium( int nb ) { NMuonmedium_ = nb; }
+        void setNMuonTight( int nb ) { NMuontight_ = nb; }
+
+        void setNElecLoose( int nb ) { NElecloose_ = nb; }
+        void setNElecMedium( int nb ) { NElecmedium_ = nb; }
+        void setNElecTight( int nb ) { NElectight_ = nb; }
+
+        void setMuonLeadIso( float iso ) { muonLeadIso_ = iso; }
+        void setMuonSubleadIso( float iso ) { muonSubleadIso_ = iso; }
+
+        void setMetPt(float metPt) {MetPt_ = (float)metPt;}
+        void setMetPhi(float metPhi) {MetPhi_ = (float)metPhi;}
+        void setMT(float mT) {mT_ = (float)mT;}
+    
+        void setnGoodEls(int nGoodEls) {nGoodEls_ = nGoodEls;}
+        void setnGoodElsFromTau(int nGoodElsFromTau) {nGoodElsFromTau_ = nGoodElsFromTau;}
+        void setnGoodMus(int nGoodMus) {nGoodMus_ = nGoodMus;}
+        void setnGoodMusFromTau(int nGoodMusFromTau) {nGoodMusFromTau_ = nGoodMusFromTau;}
+        void setnGoodTaus(int nGoodTaus) {nGoodTaus_ = nGoodTaus;}
+        void setDiphoMVARes(float diphoMVARes) {diphoMVARes_ = diphoMVARes;}
+        
+        void setLeadPhotonType(int leadPhotonType) {leadPhotonType_ = leadPhotonType; }
+        void setSubleadPhotonType(int subleadPhotonType) {subleadPhotonType_ = subleadPhotonType; }
+
+        void setLeadPhotonClosestDeltaR(double leadPhotonClosestDeltaR) { leadPhotonClosestDeltaR_ = leadPhotonClosestDeltaR;}
+        void setSubleadPhotonClosestDeltaR(double subleadPhotonClosestDeltaR) { subleadPhotonClosestDeltaR_ = subleadPhotonClosestDeltaR;}
+        void setLeadPhotonClosestPt(double leadPhotonClosestPt) { leadPhotonClosestPt_ = leadPhotonClosestPt;}
+        void setSubleadPhotonClosestPt(double subleadPhotonClosestPt) { subleadPhotonClosestPt_ = subleadPhotonClosestPt;}
+        void setRand(double rand) { rand_ = rand; }
+
+        void setTopTagScore(float toptagScore) { topTagScore_ = toptagScore; }
+        void setTopTagTopMass(float toptagTopMass) { topTagTopMass_ = toptagTopMass; }
+        void setTopTagWMass(float toptagWMass) { topTagWMass_ = toptagWMass; }
+
+        void setLeadPhoGenPt(double leadPhoGenPt) { leadPhoGenPt_ = leadPhoGenPt; }
+        void setLeadPhoGenEta(double leadPhoGenEta) { leadPhoGenEta_ = leadPhoGenEta; }
+        void setLeadPhoGenPhi(double leadPhoGenPhi) { leadPhoGenPhi_ = leadPhoGenPhi; }
+        void setSubleadPhoGenPt(double subleadPhoGenPt) { subleadPhoGenPt_ = subleadPhoGenPt; }
+        void setSubleadPhoGenEta(double subleadPhoGenEta) { subleadPhoGenEta_ = subleadPhoGenEta; }
+        void setSubleadPhoGenPhi(double subleadPhoGenPhi) { subleadPhoGenPhi_ = subleadPhoGenPhi; }
+
+        void setDNNScorettHVsTtgg(double dnn_score_ttH_vs_ttgg) { dnn_score_ttH_vs_ttgg_ = dnn_score_ttH_vs_ttgg; }
+
+        void setDNNScoreFCNCTT(double dnn_score_fcnc_tt) { dnn_score_fcnc_tt_ = dnn_score_fcnc_tt; }
+        void setDNNScoreFCNCST(double dnn_score_fcnc_st) { dnn_score_fcnc_st_ = dnn_score_fcnc_st; }
+
+        void set_fcnc_bdt_nrb_hut_score(double fcnc_bdt_nrb_hut_score) { fcnc_bdt_nrb_hut_score_ = fcnc_bdt_nrb_hut_score; }
+        void set_fcnc_bdt_smh_hut_score(double fcnc_bdt_smh_hut_score) { fcnc_bdt_smh_hut_score_ = fcnc_bdt_smh_hut_score; }
+        void set_fcnc_bdt_nrb_hct_score(double fcnc_bdt_nrb_hct_score) { fcnc_bdt_nrb_hct_score_ = fcnc_bdt_nrb_hct_score; }
+        void set_fcnc_bdt_smh_hct_score(double fcnc_bdt_smh_hct_score) { fcnc_bdt_smh_hct_score_ = fcnc_bdt_smh_hct_score; }
+
         DiPhotonTagBase::tag_t tagEnum() const override {return DiPhotonTagBase::kTTHLeptonic; }
 
         void setMvaRes(float mvaRes) {mvaRes_ = mvaRes;}
+        void setMva_RunII_Res(float mvaRes) {mva_RunII_Res_ = mvaRes;}
         float mvaRes() const {return mvaRes_;}
+        float mva_RunII_Res() const {return mva_RunII_Res_;}
 
         private:
         std::vector<edm::Ptr<Muon> > Muons_;
@@ -113,7 +226,65 @@ namespace flashgg {
         int sublead_motherMotherID_;
         int sublead_passFrix_;
         double sublead_smallestDr_;
+
+        int Nbtagloose_;
+        int Nbtagmedium_;
+        int Nbtagtight_;
+
+        int NMuonloose_;
+        int NMuonmedium_;
+        int NMuontight_;
+
+        int NElecloose_;
+        int NElecmedium_;
+        int NElectight_;
+
+        float muonLeadIso_;
+        float muonSubleadIso_;
+
+        float MetPt_;
+        float MetPhi_;
+        float mT_;
+        int nGoodEls_;
+        int nGoodElsFromTau_;
+        int nGoodMus_;
+        int nGoodMusFromTau_;
+        int nGoodTaus_;
+        float diphoMVARes_;
+
+        int leadPhotonType_;
+        int subleadPhotonType_;
+
+        double leadPhotonClosestDeltaR_;
+        double subleadPhotonClosestDeltaR_;
+        double leadPhotonClosestPt_;
+        double subleadPhotonClosestPt_;
+
+        double leadPhoGenPt_;
+        double leadPhoGenEta_;
+        double leadPhoGenPhi_;
+        double subleadPhoGenPt_;
+        double subleadPhoGenEta_;
+        double subleadPhoGenPhi_;
+
+        float topTagScore_;
+        float topTagTopMass_;
+        float topTagWMass_;
+
+        double rand_;
+
+        double dnn_score_ttH_vs_ttgg_;
+
+        double dnn_score_fcnc_tt_;
+        double dnn_score_fcnc_st_;
+
+        double fcnc_bdt_nrb_hut_score_;
+        double fcnc_bdt_smh_hut_score_;
+        double fcnc_bdt_nrb_hct_score_;
+        double fcnc_bdt_smh_hct_score_;
+
         float mvaRes_;
+        float mva_RunII_Res_;
     };
 }
 

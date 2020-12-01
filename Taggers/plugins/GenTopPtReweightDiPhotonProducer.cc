@@ -28,7 +28,6 @@ namespace flashgg {
             void produce( Event &, const EventSetup &) override;
 
             std::vector<double> getGenTops_pT (Handle<View<reco::GenParticle>>);
-
             double getLOtoNLO_SF( TH1D*, double, double );
             double getLOtoNLO_SF_unc( TH1D*, double, double );
             double NLOtoNNLO_Formula(double );
@@ -48,12 +47,12 @@ namespace flashgg {
 
     GenTopPtReweightDiPhotonProducer::GenTopPtReweightDiPhotonProducer( const ParameterSet &iConfig ) :
         diPhotonToken_( consumes<View<flashgg::DiPhotonCandidate> >( iConfig.getParameter<InputTag> ( "DiPhotonTag" ) ) ),
-        genParticlesToken_( consumes<View<reco::GenParticle> >( iConfig.getParameter<InputTag> ( "GenParticleTag" ) ) ),
-        debug_( iConfig.getParameter<bool> ( "debug")) 
+        genParticlesToken_( consumes<View<reco::GenParticle> >( iConfig.getParameter<InputTag> ( "GenParticleTag" ) ) )
     {
 
         produces<std::vector<flashgg::DiPhotonCandidate> >();
-        
+   
+        debug_ = iConfig.getParameter<bool>("debug");     
         applyToCentral_ = iConfig.getParameter<bool>("applyToCentral");
         if (applyToCentral_) {
             sfFileName_ = iConfig.getParameter<edm::FileInPath>( "sfFileName" );
@@ -65,7 +64,7 @@ namespace flashgg {
         } 
 
     }
-
+    
     std::vector<double> GenTopPtReweightDiPhotonProducer::getGenTops_pT(Handle<View<reco::GenParticle>> genParticles)
     {
         int n_matched_tops(0), n_matched_antitops(0);
@@ -183,7 +182,7 @@ namespace flashgg {
 }
 
 typedef flashgg::GenTopPtReweightDiPhotonProducer FlashggGenTopPtReweightDiPhotonProducer;
-DEFINE_FKW_MODULE( FlashggGenTopPtReweightDiPhotonProducer );
+DEFINE_FWK_MODULE( FlashggGenTopPtReweightDiPhotonProducer );
 // Local Variables:
 // mode:c++
 // indent-tabs-mode:nil

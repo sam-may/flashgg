@@ -360,6 +360,13 @@ def runRivetSequence(process, options, processId):
 
     process.p.insert(0, process.mergedGenParticles*process.myGenerator*process.rivetProducerHTXS)
 
+def customizeForGenTopPtReweight(process, applyToCentral):
+    print "Here we account for reweighting of gen-level top & antitop pt distributions for FCNC signal samples"
+    if applyToCentral:
+        print "Applying gen-level top & antitop pt reweighting!"
+        getattr(process, "flashggGenTopPtReweightDiPhotons").applyToCentral = cms.bool(True)
+    return applyToCentral
+
 def customizeForL1Prefiring(process, options, processId):
     print "Here we account for L1 pre-firing. We will only change the central diphoton weight if it is an appropriate year (2016 or 2017), an appropriate sample (only MC, not data), and the applyToCentral flag is set to true"
     isRelevant = bool(options["L1Prefiring"]["isRelevant"])

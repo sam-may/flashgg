@@ -197,6 +197,12 @@ customize.options.register('filenames',
                            VarParsing.VarParsing.varType.string,
                            'filenames'
                            )
+customize.options.register('doGenTopPtReweighting',
+                           False,
+                           VarParsing.VarParsing.multiplicity.singleton,
+                           VarParsing.VarParsing.varType.bool,
+                           'doGenTopPtReweighting'
+                           )
 
 print "Printing defaults"
 print 'doFiducial '+str(customize.doFiducial)
@@ -369,6 +375,7 @@ useEGMTools(process)
 signal_processes = ["ggh_","vbf_","wzh_","wh_","zh_","bbh_","thq_","thw_","tth_","HHTo2B2G","GluGluHToGG","VBFHToGG","VHToGG","ttHToGG","Acceptance","hh","qqh","ggh","tth","vh", "fcnc", "FCNC"]
 is_signal = reduce(lambda y,z: y or z, map(lambda x: customize.processId.count(x), signal_processes))
 
+applyGenTopPtReweight = customizeForGenTopPtReweight(process, customize.doGenTopPtReweighting)
 applyL1Prefiring = customizeForL1Prefiring(process, customize.metaConditions, customize.processId)
 
 #if customize.processId.count("h_") or customize.processId.count("vbf_") or customize.processId.count("Acceptance") or customize.processId.count("hh_"): 
@@ -419,6 +426,7 @@ if is_signal:
             variablesToUse.append("JetBTagReshapeWeight%s01sigma[1,-999999.,999999.] := getObjectWeight(\"JetBTagReshapeWeight%s01sigma\")" % (direction,direction)) 
             if applyL1Prefiring:
                 variablesToUse.append("prefireWeight%s01sigma[1,-999999.,999999.] := weight(\"prefireWeight%s01sigma\")" % (direction,direction))
+            variablesToUse.append("genTopPtReweight%s01sigma[1,-999999.,999999.] := weight(\"genTopPtReweight%01sigma\")" % (direction,direction))
             variablesToUse.append("THU_ggH_Mu%s01sigma[1,-999999.,999999.] := getTheoryWeight(\"THU_ggH_Mu%s01sigma\")" % (direction,direction))
             variablesToUse.append("THU_ggH_Res%s01sigma[1,-999999.,999999.] := getTheoryWeight(\"THU_ggH_Res%s01sigma\")" % (direction,direction))
             variablesToUse.append("THU_ggH_Mig01%s01sigma[1,-999999.,999999.] := getTheoryWeight(\"THU_ggH_Mig01%s01sigma\")" % (direction,direction))

@@ -3,6 +3,7 @@ from flashgg.MicroAOD.flashggJets_cfi import flashggUnpackedJets
 from flashgg.Taggers.flashggDiPhotonMVA_cfi import flashggDiPhotonMVA
 from flashgg.Taggers.flashggVBFMVA_cff import flashggVBFMVA,flashggVBFDiPhoDiJetMVA
 from flashgg.Taggers.flashggPrefireDiPhotons_cff import flashggPrefireDiPhotons
+from flashgg.Taggers.flashggGenTopPtReweightDiPhotons_cff import flashggGenTopPtReweightDiPhotons
 from flashgg.Taggers.flashggTags_cff import *
 from flashgg.Taggers.flashggPreselectedDiPhotons_cfi import flashggPreselectedDiPhotons
 from flashgg.Taggers.flashggTagSorter_cfi import flashggTagSorter
@@ -19,6 +20,7 @@ def flashggPrepareTagSequence(process, options, fcnc_only = False):
         flashggVBFMVA.vbfMVAweightfile = cms.FileInPath(str(options["flashggVBFMVA"]["weightFile"]))
 
     flashggTagSequence = cms.Sequence(flashggDifferentialPhoIdInputsCorrection
+                                      * flashggGenTopPtReweightDiPhotons
                                       * flashggPrefireDiPhotons
                                       * flashggPreselectedDiPhotons
                                       * flashggDiPhotonMVA

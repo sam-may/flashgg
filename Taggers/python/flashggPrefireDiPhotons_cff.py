@@ -4,7 +4,7 @@ from flashgg.Taggers.flashggTags_cff import UnpackedJetCollectionVInputTag
 
 # prefire weight calculator
 flashggPrefireDiPhotons = cms.EDProducer('FlashggPrefireDiPhotonProducer',
-                               DiPhotonTag=cms.InputTag('flashggDifferentialPhoIdInputsCorrection'),
+                               DiPhotonTag=cms.InputTag('flashggGenTopPtReweightDiPhotons'),
                                inputTagJets= UnpackedJetCollectionVInputTag,
                                photonFileName = cms.FileInPath("flashgg/Taggers/data/L1prefiring_photonpt_2017BtoF.root"),
                                photonHistName = cms.untracked.string(""),

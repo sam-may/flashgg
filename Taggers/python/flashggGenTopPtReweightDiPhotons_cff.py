@@ -6,5 +6,5 @@ flashggGenTopPtReweightDiPhotons = cms.EDProducer("FlashggGenTopPtReweightDiPhot
         sfFileName = cms.FileInPath("flashgg/Taggers/data/top_pt_sfs.root"),
         sfHistName = cms.untracked.string("pt_ratio"),
         applyToCentral = cms.bool(False),
-        debug = cms.bool(True)
+        debug = cms.bool(False)
 )

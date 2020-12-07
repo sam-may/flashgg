@@ -67,6 +67,6 @@ ls -ltr
 
 eval `scram unsetenv -sh`
 for file in $(find -name '*.root'); do
-    echo "[wrapper `date +\"%Y%m%d %k:%M:%S\"`] Attempting to gfal-copy file: $file to gsiftp://gftp.t2.ucsd.edu/${OUTPUTDIR}/${OUTPUTFILENAME}_${INDEX}.root"
-    gfal-copy -p -f -t 4200 --verbose file://`pwd`/$file gsiftp://gftp.t2.ucsd.edu/${OUTPUTDIR}/${OUTPUTFILENAME}_${INDEX}.root --checksum ADLER32
+    echo "[wrapper `date +\"%Y%m%d %k:%M:%S\"`] Attempting to gfal-copy file: $file to https://redirector.t2.ucsd.edu:1024//${OUTPUTDIR}/${OUTPUTFILENAME}_${INDEX}.root"
+    gfal-copy -p -f -t 4200 --verbose file://`pwd`/$file https://redirector.t2.ucsd.edu:1024//${OUTPUTDIR}/${OUTPUTFILENAME}_${INDEX}.root --checksum ADLER32
 done

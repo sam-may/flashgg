@@ -426,7 +426,7 @@ if is_signal:
             variablesToUse.append("JetBTagReshapeWeight%s01sigma[1,-999999.,999999.] := getObjectWeight(\"JetBTagReshapeWeight%s01sigma\")" % (direction,direction)) 
             if applyL1Prefiring:
                 variablesToUse.append("prefireWeight%s01sigma[1,-999999.,999999.] := weight(\"prefireWeight%s01sigma\")" % (direction,direction))
-            variablesToUse.append("genTopPtReweight%s01sigma[1,-999999.,999999.] := weight(\"genTopPtReweight%01sigma\")" % (direction,direction))
+            variablesToUse.append("genTopPtReweight%s01sigma[1,-999999.,999999.] := weight(\"genTopPtReweight%s01sigma\")" % (direction,direction))
             variablesToUse.append("THU_ggH_Mu%s01sigma[1,-999999.,999999.] := getTheoryWeight(\"THU_ggH_Mu%s01sigma\")" % (direction,direction))
             variablesToUse.append("THU_ggH_Res%s01sigma[1,-999999.,999999.] := getTheoryWeight(\"THU_ggH_Res%s01sigma\")" % (direction,direction))
             variablesToUse.append("THU_ggH_Mig01%s01sigma[1,-999999.,999999.] := getTheoryWeight(\"THU_ggH_Mig01%s01sigma\")" % (direction,direction))

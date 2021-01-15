@@ -20,7 +20,7 @@ rediscoveryHLTcutsV1 = cms.VPSet(
             cms.PSet(max=cms.string("100000.0")),
             cms.PSet(max=cms.string("100000.0")),
             cms.PSet(min=cms.string("0.5")),
-            cms.PSet(min=cms.string("0.5"))
+            cms.PSet(max=cms.string("0.5"))
             ),
              ),
     
@@ -32,7 +32,7 @@ rediscoveryHLTcutsV1 = cms.VPSet(
             cms.PSet(max=cms.string("100000.0")),
             cms.PSet(max=cms.string("100000.0")),
             cms.PSet(min=cms.string("0.8")),
-            cms.PSet(min=cms.string("0.5"))
+            cms.PSet(max=cms.string("0.5"))
             ),
              ),
     cms.PSet(cut=cms.string("isEB && full5x5_r9<=0.85"),  #EB low R9
@@ -43,7 +43,7 @@ rediscoveryHLTcutsV1 = cms.VPSet(
             cms.PSet(max=cms.string("6.0")),
             cms.PSet(max=cms.string("0.015")),
             cms.PSet(min=cms.string("0.5")),
-            cms.PSet(min=cms.string("0.5"))
+            cms.PSet(max=cms.string("0.5"))
             ),       
              ),       
     cms.PSet(cut=cms.string("isEE && full5x5_r9<=0.90"),  ##EE low R9
@@ -54,7 +54,7 @@ rediscoveryHLTcutsV1 = cms.VPSet(
             cms.PSet(max=cms.string("6.0")),
             cms.PSet(max=cms.string("0.035")),
             cms.PSet(min=cms.string("0.8")),
-            cms.PSet(min=cms.string("0.5"))
+            cms.PSet(max=cms.string("0.5"))
             ),
              )
     )

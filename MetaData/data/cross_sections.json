@@ -169,6 +169,7 @@
     "ttHJetToGG_M124_13TeV_amcatnloFXFX_madspin_pythia8_v2"                          : { "xs" : 0.5193,   "br" : 0.002266, "kf" : 1.06, "itype":-124300 },
     "ttHToGG_M125_13TeV_powheg_pythia8_v2"                                           : { "xs" : 0.5071,   "br" : 0.00227, "kf" : 1.06, "itype":-125300 },  
     "ttHToGG_M125_13TeV_powheg_pythia8"                                              : { "xs" : 0.5071,   "br" : 0.00227, "kf" : 1.06, "itype":-125300 },
+    "ttHJetToGG_M125_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8"                     : { "xs" : 0.5071,   "br" : 0.00227, "kf" : 1.06, "itype":-125300 },
     "ttHJetToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8"                             : { "xs" : 0.5071,   "br" : 0.00227, "kf" : 1.06, "itype":-125300 },
     "ttHJetToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8_PSWeights"                   : { "xs" : 0.5071,   "br" : 0.00227, "kf" : 1.06, "itype":-125300 },
     "ttHJetToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8_v2"                          : { "xs" : 0.5071,   "br" : 0.00227, "kf" : 1.06, "itype":-125300 },

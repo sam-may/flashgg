@@ -207,7 +207,7 @@ def modifySystematicsWorkflowForFCNC(process, systlabels, phosystlabels, metsyst
         getattr(process, tag).UseLargeMVAs = cms.bool(True) # enable memory-intensive MVAs
         getattr(process, tag).Coupling = cms.string(coupling.encode("ascii"))
         bDisc = cms.vdouble(bDiscriminator[0], bDiscriminator[1], bDiscriminator[2])
-        getattr(process, tag).bDiscriminator = bDiscriminator
+        getattr(process, tag).bDiscriminator = bDisc
 
 
     # Run cms.Sequence(process.flashggFCNCLeptonicTag + process.flashggFCNCHadronicTag) once at the beginning, put tag sorters for each systematic afterwards, and finally flashggSystTagMerger at the very end

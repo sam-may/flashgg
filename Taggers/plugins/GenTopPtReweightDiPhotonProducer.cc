@@ -29,7 +29,7 @@ namespace flashgg {
 
             std::vector<double> getGenTops_pT (Handle<View<reco::GenParticle>>);
             double getLOtoNLO_SF( TH1D*, double, double );
-            double getLOtoNLO_SF_unc( TH1D*, double, double );
+            double getSFUnc(double );
             double NLOtoNNLO_Formula(double );
             double getNLOtoNNLO_SF( double, double );
 
@@ -100,16 +100,9 @@ namespace flashgg {
         return pow(top_sf * antitop_sf, 0.5); // take geometric mean of two SFs
     }
 
-    double GenTopPtReweightDiPhotonProducer::getLOtoNLO_SF_unc(TH1D* sfHist, double gen_top_pt, double gen_antitop_pt)
+    double GenTopPtReweightDiPhotonProducer::getSFUnc(double sf)
     {
-        double top_sf = sfHist->GetBinContent( sfHist->FindBin(gen_top_pt) );
-        double antitop_sf = sfHist->GetBinContent( sfHist->FindBin(gen_antitop_pt) );
-
-        double top_sf_unc = sfHist->GetBinError( sfHist->FindBin(gen_top_pt) );
-        double antitop_sf_unc = sfHist->GetBinError( sfHist->FindBin(gen_antitop_pt) );
-
-        // propagate individual statistical uncertainties through f(x,y) = sqrt(xy) -> sigma_f = sqrt( (x/4y)*sigma_x^2 + (y/4x)*sigma_y^2)
-        return pow( ((antitop_sf / (4*top_sf)) * pow(top_sf_unc, 2)) + ((top_sf / (4*antitop_sf)) * pow(antitop_sf_unc, 2)), 0.5);
+        return abs(sf - 1.0);
     }
 
     double GenTopPtReweightDiPhotonProducer::NLOtoNNLO_Formula(double pt)
@@ -145,24 +138,23 @@ namespace flashgg {
                 double antitop_pt = gen_pt[1];
 
                 double LOtoNLO_SF = getLOtoNLO_SF(sfHist_, top_pt, antitop_pt);
-                double LOtoNLO_SF_unc = getLOtoNLO_SF_unc(sfHist_, top_pt, antitop_pt);
 
                 double NLOtoNNLO_SF = getNLOtoNNLO_SF(top_pt, antitop_pt);
 
                 double SF = LOtoNLO_SF * NLOtoNNLO_SF;                
+                double SF_unc = getSFUnc(SF);
 
                 if (debug_) {
                     std::cout << "Top (antitop) pt identified as " << top_pt << " (" << antitop_pt << ")" << std::endl;
                     std::cout << "LO to NLO scale factor: " << LOtoNLO_SF << std::endl;
-                    std::cout << "LO to NLO scale factor unc: " << LOtoNLO_SF_unc << std::endl;
                     std::cout << "NLO to NNLO scale factor: " << NLOtoNNLO_SF << std::endl;
-                    std::cout << "Final scale factor and variations: central = " << SF << ", up = " << SF + LOtoNLO_SF_unc << ", down = " << SF - LOtoNLO_SF_unc << std::endl;
+                    std::cout << "Scale factor uncertainty: " << SF_unc << std::endl;
+                    std::cout << "Final scale factor and variations: central = " << SF << ", up = " << SF + SF_unc << ", down = " << SF - SF_unc << std::endl;
                 }
 
                 genTopPtReweightObject.setCentralWeight(SF);
-                genTopPtReweightObject.setWeight("genTopPtReweightUp01sigma", SF + LOtoNLO_SF_unc);
-                genTopPtReweightObject.setWeight("genTopPtReweightDown01sigma", SF - LOtoNLO_SF_unc);
-
+                genTopPtReweightObject.setWeight("genTopPtReweightUp01sigma", SF + SF_unc);
+                genTopPtReweightObject.setWeight("genTopPtReweightDown01sigma", SF - SF_unc);
                 updatedDipho->includeWeights(genTopPtReweightObject);
             }
 

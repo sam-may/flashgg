@@ -548,8 +548,8 @@ namespace flashgg {
 
                  for( unsigned int i = 0; i < tagJets.size(); ++i )
                 {
-                    tthtags_obj.includeWeightsByLabel( *tagJets[i] , "JetBTagReshapeWeight");
-                    tthtags_obj.includeWeightsByLabel( *tagJets[i] , "JetBTagCutWeight");
+                    tthtags_obj.includeWeightsByLabel( *tagJets[i] , "JetBTagReshapeWeight", true, true);
+                    tthtags_obj.includeWeightsByLabel( *tagJets[i] , "JetBTagCutWeight", true, true);
                 }
 
 

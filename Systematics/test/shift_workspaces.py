@@ -36,6 +36,8 @@ years = ["2016", "2017", "2018"]
 procs = ["tth", "zh", "wh", "vbf", "bbh", "thw", "thq", "ggh"]
 mass_points = ["120", "125", "130"]
 
+do_fcnc = True
+
 for coupling in couplings:
     for year in years:
         # sm higgs
@@ -43,9 +45,11 @@ for coupling in couplings:
             identify_missing_ws(coupling, year, args.tag, proc)
 
         # fcnc
-        copy_ws = "cp %s %s" % (ws_name_fcnc(coupling, year, args.tag), ws_name_fcnc(coupling, year, args.tag, "125"))
-        shift_120 = "python mgg_shifter.py --inputFile %s --inputMass 125 --targetMass 120" % (ws_name_fcnc(coupling, year, args.tag, "125"))
-        shift_130 = "python mgg_shifter.py --inputFile %s --inputMass 125 --targetMass 130" % (ws_name_fcnc(coupling, year, args.tag, "125"))
-        for command in [copy_ws, shift_120, shift_130]:
-            print command
-            os.system(command)
+        if do_fcnc:
+            copy_ws = "cp %s %s" % (ws_name_fcnc(coupling, year, args.tag), ws_name_fcnc(coupling, year, args.tag, "125"))
+            print "cp %s %s" % (ws_name_fcnc(coupling, year, args.tag), ws_name_fcnc(coupling, year, args.tag, "125"))
+            shift_120 = "python mgg_shifter.py --inputFile %s --inputMass 125 --targetMass 120" % (ws_name_fcnc(coupling, year, args.tag, "125"))
+            shift_130 = "python mgg_shifter.py --inputFile %s --inputMass 125 --targetMass 130" % (ws_name_fcnc(coupling, year, args.tag, "125"))
+            for command in [copy_ws, shift_120, shift_130]:
+                print command
+                os.system(command)

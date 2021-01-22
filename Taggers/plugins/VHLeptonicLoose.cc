@@ -360,7 +360,7 @@ namespace flashgg {
             if( !(tagElectrons.size() > 0) && !(tagMuons.size()>0) ) { continue; }
             //including SFs for leading muon or electron
             if(tagMuons.size()>0){
-                VHLeptonicLooseTags_obj.includeWeightsByLabel( *tagMuons.at(0), "MuonWeight");
+                VHLeptonicLooseTags_obj.includeWeightsByLabel( *tagMuons.at(0), "MuonWeight", true, true);
             } else if (tagElectrons.size() > 0){
                 VHLeptonicLooseTags_obj.includeWeights( *tagElectrons.at(0));
             }

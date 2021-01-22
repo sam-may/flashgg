@@ -161,7 +161,12 @@ if "fcnc" in procs:
         split_factor = 3
 
         normalizationInfo = " normalizationInfo=%.6f,%.6f splitFactor=%d" % (samples[smp_match]["xs"], (samples[smp_match]["xs"]*1000.) / samples[smp_match][year]["scale1fb"], split_factor)
-        datasets[year]["fcnc"][sample]["args"] = normalizationInfo
+        if "TT_FCNC" in dataset or "private_TT" in dataset: 
+            genTopPtReweightInfo = " doGenTopPtReweighting=True "
+        else:
+            genTopPtReweightInfo = ""
+        print dataset, genTopPtReweightInfo
+        datasets[year]["fcnc"][sample]["args"] = normalizationInfo + genTopPtReweightInfo
         datasets[year]["fcnc"][sample]["year"] = year
 
 for year in years:
@@ -182,6 +187,11 @@ for year in years:
             if sample_name in samples.keys():
                 xs = samples[sample_name]["xs"]
 
+                print "Sample name is %s" % sample_name
+                if "THQ" in sample_name or "THW" in sample_name:
+                    print "\n\n\n\n Adding Reweight to sample: %s\n\n\n\n" % sample_name
+                    cmdLine += " WeightName=rwgt_12 "
+
                 # Check for scale1fb first from the proper year
                 if year in samples[sample_name].keys() and not (sample_name == "VBFHToGG_M125_13TeV_amcatnlo_pythia8" and year == "2016"): 
                     scale1fb = samples[sample_name][year]["scale1fb"]
@@ -195,9 +205,6 @@ for year in years:
                     cmdLine = cmdLine.replace("campaign=%s" % catalog_dict[year], "campaign=%s" % catalog_dict[sample_year])
                     cmdLine = cmdLine.replace(pu_dict[year], pu_dict[sample_year])
 
-                    if "THQ_ctcvcp" in sample_name or "THW_ctcvcp" in sample_name:
-                        cmdLine += " WeightName=rwgt_12 "
-                    #print "cmdLine after", cmdLine
                 production_names = []
                 for production in samples[sample_name][sample_year].keys():
                     if production == "scale1fb":
@@ -351,7 +358,7 @@ def trim_dictionary(dictionary, to_remove):
         else:
             trim_dictionary(info, to_remove)
 
-max_ws = 25
+max_ws = 300
 def hadd_workspaces(master, targets):
     if os.path.exists(master):
         print "File %s already exists" % master
@@ -361,7 +368,10 @@ def hadd_workspaces(master, targets):
         print "File %s does not already exist" % master
 
     if len(targets.split(" ")) <= max_ws:
-        return "/usr/bin/ionice -c2 -n7 hadd_workspaces %s %s" % (master, targets)
+        if len(targets.split(" ")) < 25:
+            return "/usr/bin/ionice -c2 -n7 hadd_workspaces %s %s" % (master, targets)
+        else:
+            return "/usr/bin/ionice -c2 -n7 python hadd_parallel.py %s %s" % (master, targets)
 
     target_list = targets.split(" ")
     command = ""
@@ -371,7 +381,7 @@ def hadd_workspaces(master, targets):
         partial_files = ""
         for j in range(i*max_ws, min((i+1)*max_ws, len(target_list))):
             partial_files += "%s " % target_list[j]
-        intermediate_command = "/usr/bin/ionice -c2 -n7 hadd_workspaces %s %s;" % (intermediate_file, partial_files)
+        intermediate_command = "/usr/bin/ionice -c2 -n7 python hadd_parallel.py %s %s;" % (intermediate_file, partial_files)
         intermediate_files += "%s " % intermediate_file
         command += intermediate_command
         

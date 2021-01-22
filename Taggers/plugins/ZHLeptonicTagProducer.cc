@@ -289,8 +289,8 @@ namespace flashgg {
                 ZHLeptonicTags_obj.setElectrons( tagElectrons );
                 //including SFs for muons or electrons
                 if(isDiMuon){
-                    ZHLeptonicTags_obj.includeWeightsByLabel( *tagMuons.at(0), "MuonWeight");
-                    ZHLeptonicTags_obj.includeWeightsByLabel( *tagMuons.at(1), "MuonWeight");
+                    ZHLeptonicTags_obj.includeWeightsByLabel( *tagMuons.at(0), "MuonWeight", true, true);
+                    ZHLeptonicTags_obj.includeWeightsByLabel( *tagMuons.at(1), "MuonWeight", true, true);
                 } else if(isDiElectron){
                     ZHLeptonicTags_obj.includeWeights( *tagElectrons.at(0) );
                     ZHLeptonicTags_obj.includeWeights( *tagElectrons.at(1) );

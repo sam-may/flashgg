@@ -200,7 +200,7 @@ class jetSystematicsCustomize:
                                                                bTagCalibrationFile = cms.FileInPath(str(self.metaConditions['bTagSystematics']['bTagCalibrationFile_WPCut_'+ str(bTagger)])),
                                                                bDiscriminator = cms.double(self.metaConditions['bTagSystematics']['bDiscriminatorValue_'+ str(bTagger)]),
                                                                Debug = cms.untracked.bool(False),
-                                                               ApplyCentralValue = cms.bool(True)
+                                                               ApplyCentralValue = cms.bool(False)
                                                             ),
                                                      cms.PSet( MethodName = cms.string("FlashggJetBTagReshapeWeight"),
                                                                Label = cms.string("JetBTagReshapeWeight_lf"),

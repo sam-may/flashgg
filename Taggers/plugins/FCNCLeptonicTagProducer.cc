@@ -1678,11 +1678,23 @@ namespace flashgg {
                     FCNCLeptonicTag tthltags_obj( dipho, mvares );
                     tthltags_obj.setCategoryNumber(catNumber);
 
+                    /*
+                    std::vector<TString> btag_syst_source = { "jes", "lf", "hfstats1", "hfstats2", "cferr1", "cferr2", "hf", "lfstats1", "lfstats2" };
+                    for (unsigned int i = 0; i < btag_syst_source.size(); i++) {
+                        TString label = "JetBTagReshapeWeight_" + btag_syst_source[i];
+                        std::string b_label = label.Data();
+                        bool modify_central = (i == 0);
+                        for( unsigned int j = 0; j < tagJets.size(); ++j ) {
+                            tthltags_obj.includeWeightsByLabel( *tagJets[j], b_label, true, modify_central);
+                        }
+                    }
+                    */
+
+
                     for( unsigned int i = 0; i < tagJets.size(); ++i )
                     {
-                        tthltags_obj.includeWeightsByLabel( *tagJets[i] , "JetBTagReshapeWeight");
+                        tthltags_obj.includeWeightsByLabel( *tagJets[i] , "JetBTagReshapeWeight", true, true);
                     }
-
 
                     for( unsigned int i = 0; i < Muons.size(); ++i ) {
                         tthltags_obj.includeWeights( *Muons.at(i));

@@ -1194,12 +1194,12 @@ namespace flashgg {
 
                     if(!useTTHHadronicMVA_){
                         for( unsigned num = 0; num < JetVect.size(); num++ ) {
-                            tthhtags_obj.includeWeightsByLabel( *JetVect[num] , "JetBTagCutWeight");
+                            tthhtags_obj.includeWeightsByLabel( *JetVect[num] , "JetBTagCutWeight", true, true);
                             //tthhtags_obj.includeWeightsByLabel( *JetVect[num] , "JetBTagReshapeWeight");
                         }
                     } else {
                         for( unsigned num = 0; num < JetVect.size(); num++ ) {
-                            tthhtags_obj.includeWeightsByLabel( *JetVect[num] , "JetBTagReshapeWeight");
+                            tthhtags_obj.includeWeightsByLabel( *JetVect[num] , "JetBTagReshapeWeight", true, true);
                         }                    
                     }
                     tthhtags_obj.includeWeights( *dipho );

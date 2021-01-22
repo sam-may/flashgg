@@ -73,7 +73,7 @@ namespace flashgg {
         }
     }
 
-    void WeightedObject::includeWeightsByLabel( const WeightedObject &other, string keyInput, bool usecentralifnotfound /* default behavior: true*/ )
+    void WeightedObject::includeWeightsByLabel( const WeightedObject &other, string keyInput, bool usecentralifnotfound, bool modifyCentral /* default behavior: true*/ )
     {
         // multiplies weights which are present in this and other, imports weights that are only in other
 
@@ -113,6 +113,9 @@ namespace flashgg {
         // multiplies weights which are present in this and other
         for( auto keyIt = _labels.begin() ; keyIt != _labels.end() ; keyIt++ ) {
 
+            if (*keyIt == "Central" && !modifyCentral)
+                continue;
+
             if( *keyIt == "Central" ) {//multiply central weight with label central weight
 
                 setWeight( *keyIt, weight( *keyIt ) * othercentralweightLabel );
@@ -134,6 +137,9 @@ namespace flashgg {
 
         //imports weights that are only in other
         for( auto keyIt = other._labels.begin() ; keyIt != other._labels.end() ; keyIt++ ) {
+
+            if (*keyIt == "Central" && !modifyCentral)
+                continue;
 
             if( !hasWeight( *keyIt ) ) {
 

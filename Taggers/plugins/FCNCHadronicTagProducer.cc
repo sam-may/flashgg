@@ -1701,13 +1701,24 @@ namespace flashgg {
 
                     if(!useTTHHadronicMVA_){
                         for( unsigned num = 0; num < JetVect.size(); num++ ) {
-                            tthhtags_obj.includeWeightsByLabel( *JetVect[num] , "JetBTagCutWeight");
+                            tthhtags_obj.includeWeightsByLabel( *JetVect[num] , "JetBTagCutWeight", true, true);
                             //tthhtags_obj.includeWeightsByLabel( *JetVect[num] , "JetBTagReshapeWeight");
                         }
                     } else {
+                        std::vector<TString> btag_syst_source = { "jes", "lf", "hfstats1", "hfstats2", "cferr1", "cferr2", "hf", "lfstats1", "lfstats2" };
+                        /*
+                        for (unsigned int i = 0; i < btag_syst_source.size(); i++) {
+                            bool modify_central = (i == 0);
+                            for( unsigned num = 0; num < JetVect.size(); num++ ) {
+                                TString label = "JetBTagReshapeWeight_" + btag_syst_source[i];
+                                std::string b_label = label.Data();
+                                tthhtags_obj.includeWeightsByLabel( *JetVect[num] , b_label, true, modify_central);
+                            } 
+                        } */
                         for( unsigned num = 0; num < JetVect.size(); num++ ) {
-                            tthhtags_obj.includeWeightsByLabel( *JetVect[num] , "JetBTagReshapeWeight");
-                        }                    
+                            tthhtags_obj.includeWeightsByLabel( *JetVect[num] , "JetBTagReshapeWeight", true, true);
+                        }
+
                     }
                     tthhtags_obj.includeWeights( *dipho );
 

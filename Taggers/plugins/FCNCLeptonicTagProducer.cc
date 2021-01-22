@@ -666,14 +666,14 @@ namespace flashgg {
 
         FCNC_BDTNRB_RunII_->AddVariable("subleadPSV_", &subleadPSV_);
         FCNC_BDTNRB_RunII_->AddVariable("leadPSV_", &leadPSV_);
-        FCNC_BDTNRB_RunII_->AddVariable("jet3_btag_", &btag_noBB_3_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet3_btag_", &btag_3_);
         FCNC_BDTNRB_RunII_->AddVariable("jet3_eta_", &jetEta_3_);
         FCNC_BDTNRB_RunII_->AddVariable("jet3_pt_", &jetPt_3_);
 
-        FCNC_BDTNRB_RunII_->AddVariable("jet2_btag_", &btag_noBB_2_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet2_btag_", &btag_2_);
         FCNC_BDTNRB_RunII_->AddVariable("jet2_eta_", &jetEta_2_);
         FCNC_BDTNRB_RunII_->AddVariable("jet2_pt_", &jetPt_2_);
-        FCNC_BDTNRB_RunII_->AddVariable("jet1_btag_", &btag_noBB_1_);
+        FCNC_BDTNRB_RunII_->AddVariable("jet1_btag_", &btag_1_);
         FCNC_BDTNRB_RunII_->AddVariable("jet1_eta_", &jetEta_1_);
 
         FCNC_BDTNRB_RunII_->AddVariable("jet1_pt_", &jetPt_1_);
@@ -685,8 +685,8 @@ namespace flashgg {
         FCNC_BDTNRB_RunII_->AddVariable("ht_", &ht_);
         FCNC_BDTNRB_RunII_->AddVariable("njets_", &nJets_);
         FCNC_BDTNRB_RunII_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
-        FCNC_BDTNRB_RunII_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
-        FCNC_BDTNRB_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
+        FCNC_BDTNRB_RunII_->AddVariable("max1_btag_", &maxBTagVal_);
+        FCNC_BDTNRB_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_);
 
         FCNC_BDTNRB_RunII_->AddVariable("minIDMVA_", &minPhoID_);
         FCNC_BDTNRB_RunII_->AddVariable("maxIDMVA_", &maxPhoID_);        
@@ -695,7 +695,7 @@ namespace flashgg {
         FCNC_BDTNRB_RunII_->AddVariable("n_lep_tight_", &lepton_nTight_);
         FCNC_BDTNRB_RunII_->AddVariable("lep1_charge_", &lep1_charge_);
 
-        FCNC_BDTNRB_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
+        //FCNC_BDTNRB_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
         FCNC_BDTNRB_RunII_->AddVariable("chi2_neutrino_pz_", &chi2_neutrino_pz_);
         FCNC_BDTNRB_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
         FCNC_BDTNRB_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
@@ -724,14 +724,14 @@ namespace flashgg {
 
         FCNC_BDTSMH_RunII_->AddVariable("subleadPSV_", &subleadPSV_);
         FCNC_BDTSMH_RunII_->AddVariable("leadPSV_", &leadPSV_);
-        FCNC_BDTSMH_RunII_->AddVariable("jet3_btag_", &btag_noBB_3_);
+        FCNC_BDTSMH_RunII_->AddVariable("jet3_btag_", &btag_3_);
         FCNC_BDTSMH_RunII_->AddVariable("jet3_eta_", &jetEta_3_);
         FCNC_BDTSMH_RunII_->AddVariable("jet3_pt_", &jetPt_3_);
 
-        FCNC_BDTSMH_RunII_->AddVariable("jet2_btag_", &btag_noBB_2_);
+        FCNC_BDTSMH_RunII_->AddVariable("jet2_btag_", &btag_2_);
         FCNC_BDTSMH_RunII_->AddVariable("jet2_eta_", &jetEta_2_);
         FCNC_BDTSMH_RunII_->AddVariable("jet2_pt_", &jetPt_2_);
-        FCNC_BDTSMH_RunII_->AddVariable("jet1_btag_", &btag_noBB_1_);
+        FCNC_BDTSMH_RunII_->AddVariable("jet1_btag_", &btag_1_);
         FCNC_BDTSMH_RunII_->AddVariable("jet1_eta_", &jetEta_1_);
 
         FCNC_BDTSMH_RunII_->AddVariable("jet1_pt_", &jetPt_1_);
@@ -743,8 +743,8 @@ namespace flashgg {
         FCNC_BDTSMH_RunII_->AddVariable("ht_", &ht_);
         FCNC_BDTSMH_RunII_->AddVariable("njets_", &nJets_);
         FCNC_BDTSMH_RunII_->AddVariable("dipho_delta_R", &diPhoDeltaR_);
-        FCNC_BDTSMH_RunII_->AddVariable("max1_btag_", &maxBTagVal_noBB_);
-        FCNC_BDTSMH_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_noBB_);
+        FCNC_BDTSMH_RunII_->AddVariable("max1_btag_", &maxBTagVal_);
+        FCNC_BDTSMH_RunII_->AddVariable("max2_btag_", &secondMaxBTagVal_);
 
         FCNC_BDTSMH_RunII_->AddVariable("minIDMVA_", &minPhoID_);
         FCNC_BDTSMH_RunII_->AddVariable("maxIDMVA_", &maxPhoID_);
@@ -753,7 +753,7 @@ namespace flashgg {
         FCNC_BDTSMH_RunII_->AddVariable("n_lep_tight_", &lepton_nTight_);
         FCNC_BDTSMH_RunII_->AddVariable("lep1_charge_", &lep1_charge_);
 
-        FCNC_BDTSMH_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
+        //FCNC_BDTSMH_RunII_->AddVariable("top_tag_score_", &top_tag_score_);
         FCNC_BDTSMH_RunII_->AddVariable("chi2_neutrino_pz_", &chi2_neutrino_pz_);
         FCNC_BDTSMH_RunII_->AddVariable("chi2_tbw_mass_", &chi2_tbw_mass_);
         FCNC_BDTSMH_RunII_->AddVariable("chi2_tbw_pt_", &chi2_tbw_pt_);
@@ -1260,7 +1260,7 @@ namespace flashgg {
 
                         float bDiscriminatorValue = -2.;
                         if(bTag_ == "pfDeepCSV") bDiscriminatorValue = thejet->bDiscriminator("pfDeepCSVJetTags:probb")+thejet->bDiscriminator("pfDeepCSVJetTags:probbb") ;
-                        else if (bTag_ == "pfDeepJet") bDiscriminatorValue = thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") ;
+                        else if (bTag_ == "pfDeepJet") bDiscriminatorValue = thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") + thejet->bDiscriminator("mini_pfDeepFlavourJetTags:problepb");
                         else  bDiscriminatorValue = thejet->bDiscriminator( bTag_ );
 
                         float bDiscriminatorValue_noBB = -2;
@@ -1268,7 +1268,7 @@ namespace flashgg {
                         else if (bTag_ == "pfDeepJet") bDiscriminatorValue_noBB = thejet->bDiscriminator("mini_pfDeepFlavourJetTags:probb");
                         else  bDiscriminatorValue_noBB = thejet->bDiscriminator( bTag_ );
 
-                        btag_scores.push_back(bDiscriminatorValue_noBB);
+                        btag_scores.push_back(bDiscriminatorValue);
 
                         bDiscriminatorValue >= 0. ? bTags.push_back(bDiscriminatorValue) : bTags.push_back(-1.);
                         bDiscriminatorValue_noBB >= 0. ? bTags_noBB.push_back(bDiscriminatorValue_noBB) : bTags_noBB.push_back(-1.);
@@ -1308,7 +1308,7 @@ namespace flashgg {
                 // Set variables to compute MVA value
                 if(tagJets.size()>0){
                     if(bTag_ == "pfDeepCSV") btag_1_=tagJets[0]->bDiscriminator("pfDeepCSVJetTags:probb")+tagJets[0]->bDiscriminator("pfDeepCSVJetTags:probbb") ;
-                    else if (bTag_ == "pfDeepJet") btag_1_ = tagJets[0]->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+tagJets[0]->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") ;
+                    else if (bTag_ == "pfDeepJet") btag_1_ = tagJets[0]->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+tagJets[0]->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") + tagJets[0]->bDiscriminator("mini_pfDeepFlavourJetTags:problepb");
                     else  btag_1_ = tagJets[0]->bDiscriminator( bTag_ );
                     if(bTag_ == "pfDeepCSV") btag_noBB_1_=tagJets[0]->bDiscriminator("pfDeepCSVJetTags:probb");
                     else if (bTag_ == "pfDeepJet") btag_noBB_1_ = tagJets[0]->bDiscriminator("mini_pfDeepFlavourJetTags:probb");
@@ -1320,7 +1320,7 @@ namespace flashgg {
 
                 if(tagJets.size()>1){
                     if(bTag_ == "pfDeepCSV") btag_2_=tagJets[1]->bDiscriminator("pfDeepCSVJetTags:probb")+tagJets[1]->bDiscriminator("pfDeepCSVJetTags:probbb") ;
-                    else if (bTag_ == "pfDeepJet") btag_2_ = tagJets[1]->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+tagJets[1]->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") ;
+                    else if (bTag_ == "pfDeepJet") btag_2_ = tagJets[1]->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+tagJets[1]->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") + tagJets[1]->bDiscriminator("mini_pfDeepFlavourJetTags:problepb");
                     else  btag_2_ = tagJets[1]->bDiscriminator( bTag_ );
                     if(bTag_ == "pfDeepCSV") btag_noBB_2_=tagJets[1]->bDiscriminator("pfDeepCSVJetTags:probb");
                     else if (bTag_ == "pfDeepJet") btag_noBB_2_ = tagJets[1]->bDiscriminator("mini_pfDeepFlavourJetTags:probb");
@@ -1332,7 +1332,7 @@ namespace flashgg {
 
                 if(tagJets.size()>2){
                     if(bTag_ == "pfDeepCSV") btag_3_=tagJets[2]->bDiscriminator("pfDeepCSVJetTags:probb")+tagJets[2]->bDiscriminator("pfDeepCSVJetTags:probbb") ;
-                    else if (bTag_ == "pfDeepJet") btag_3_ = tagJets[2]->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+tagJets[2]->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") ;
+                    else if (bTag_ == "pfDeepJet") btag_3_ = tagJets[2]->bDiscriminator("mini_pfDeepFlavourJetTags:probb")+tagJets[2]->bDiscriminator("mini_pfDeepFlavourJetTags:probbb") + tagJets[2]->bDiscriminator("mini_pfDeepFlavourJetTags:problepb");
                     else  btag_3_ = tagJets[2]->bDiscriminator( bTag_ );
                     if(bTag_ == "pfDeepCSV") btag_noBB_3_=tagJets[2]->bDiscriminator("pfDeepCSVJetTags:probb");
                     else if (bTag_ == "pfDeepJet") btag_noBB_3_ = tagJets[2]->bDiscriminator("mini_pfDeepFlavourJetTags:probb");
@@ -1592,8 +1592,8 @@ namespace flashgg {
                   cout << "--------------------------------------------------------" << endl;
                   cout << "maxIDMVA_: " << maxPhoID_ << endl;
                   cout << "minIDMVA_: " << minPhoID_ << endl;
-                  cout << "max2_btag_: " << secondMaxBTagVal_noBB_ << endl;
-                  cout << "max1_btag_: " << maxBTagVal_noBB_ << endl;
+                  cout << "max2_btag_: " << secondMaxBTagVal_ << endl;
+                  cout << "max1_btag_: " << maxBTagVal_ << endl;
                   cout << "dipho_delta_R_: " << diPhoDeltaR_ << endl;
 
                   cout << "njets_: " << nJets_ << endl;
@@ -1605,16 +1605,16 @@ namespace flashgg {
 
                   cout << "jet1_pt_: " << jetPt_1_ << endl;
                   cout << "jet1_eta_: " << jetEta_1_ << endl;
-                  cout << "jet1_btag_: " << btag_noBB_1_ << endl;
+                  cout << "jet1_btag_: " << btag_1_ << endl;
                   cout << "jet2_pt_: " << jetPt_2_ << endl;
                   cout << "jet2_eta_: " << jetEta_2_ << endl;
-                  cout << "jet2_btag_: " << btag_noBB_2_ << endl;
+                  cout << "jet2_btag_: " << btag_2_ << endl;
                   cout << "jet3_pt_: " << jetPt_3_ << endl;
                   cout << "jet3_eta_: " << jetEta_3_ << endl;
-                  cout << "jet3_btag_: " << btag_noBB_3_ << endl;
+                  cout << "jet3_btag_: " << btag_3_ << endl;
                   cout << "jet4_pt_: " << jetPt_4_ << endl;
                   cout << "jet4_eta_: " << jetEta_4_ << endl;
-                  cout << "jet4_btag_: " << btag_noBB_4_ << endl;
+                  cout << "jet4_btag_: " << btag_4_ << endl;
 
                   cout << "leadPSV_: " << leadPSV_ << endl;
                   cout << "subleadPSV_: " << subleadPSV_ << endl;

@@ -197,7 +197,7 @@ def modifySystematicsWorkflowForttH(process, systlabels, phosystlabels, metsystl
         setattr(getattr(process, 'flashggTagSorter'+systlabel), 'TagPriorityRanges', cms.VPSet( cms.PSet(TagName = cms.InputTag('flashggTTHLeptonicTag', systlabel)), cms.PSet(TagName = cms.InputTag('flashggTTHHadronicTag', systlabel)) ))
 
 
-def modifySystematicsWorkflowForFCNC(process, systlabels, phosystlabels, metsystlabels, jetsystlabels, coupling):
+def modifySystematicsWorkflowForFCNC(process, systlabels, phosystlabels, metsystlabels, jetsystlabels, coupling, bDiscriminator):
     for tag in ["flashggFCNCLeptonicTag", "flashggFCNCHadronicTag"]:
         getattr(process, tag).DiPhotonSuffixes = cms.vstring(phosystlabels)
         getattr(process, tag).JetsSuffixes = cms.vstring(jetsystlabels)
@@ -206,6 +206,9 @@ def modifySystematicsWorkflowForFCNC(process, systlabels, phosystlabels, metsyst
         getattr(process, tag).ModifySystematicsWorkflow = cms.bool(True)
         getattr(process, tag).UseLargeMVAs = cms.bool(True) # enable memory-intensive MVAs
         getattr(process, tag).Coupling = cms.string(coupling.encode("ascii"))
+        bDisc = cms.vdouble(bDiscriminator[0], bDiscriminator[1], bDiscriminator[2])
+        getattr(process, tag).bDiscriminator = bDiscriminator
+
 
     # Run cms.Sequence(process.flashggFCNCLeptonicTag + process.flashggFCNCHadronicTag) once at the beginning, put tag sorters for each systematic afterwards, and finally flashggSystTagMerger at the very end
     process.p.remove(process.flashggTagSorter)

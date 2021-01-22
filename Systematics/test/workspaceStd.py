@@ -423,7 +423,10 @@ if is_signal:
             variablesToUse.append("ElectronRecoWeight%s01sigma[1,-999999.,999999.] := getObjectWeight(\"ElectronRecoWeight%s01sigma\")" % (direction,direction))
             variablesToUse.append("MuonIsoWeight%s01sigma[1,-999999.,999999.] := getObjectWeight(\"Muon%sISOWeight%s01sigma\")" % (direction,str(customize.metaConditions['MUON_ISO']),direction))
             variablesToUse.append("JetBTagCutWeight%s01sigma[1,-999999.,999999.] := getObjectWeight(\"JetBTagCutWeight%s01sigma\")" % (direction,direction))
-            variablesToUse.append("JetBTagReshapeWeight%s01sigma[1,-999999.,999999.] := getObjectWeight(\"JetBTagReshapeWeight%s01sigma\")" % (direction,direction)) 
+            #variablesToUse.append("JetBTagReshapeWeight%s01sigma[1,-999999.,999999.] := getObjectWeight(\"JetBTagReshapeWeight%s01sigma\")" % (direction,direction)) 
+            btag_syst_source = ["jes", "lf", "hfstats1", "hfstats2", "cferr1", "cferr2", "hf", "lfstats1", "lfstats2"]
+            for btag_source in btag_syst_source:
+                variablesToUse.append("JetBTagReshapeWeight%s01sigma[1,-999999.,999999.] := getObjectWeight(\"JetBTagReshapeWeight_%s%s01sigma\")" % (direction, btag_source, direction))
             if applyL1Prefiring:
                 variablesToUse.append("prefireWeight%s01sigma[1,-999999.,999999.] := weight(\"prefireWeight%s01sigma\")" % (direction,direction))
             variablesToUse.append("genTopPtReweight%s01sigma[1,-999999.,999999.] := weight(\"genTopPtReweight%s01sigma\")" % (direction,direction))
@@ -697,7 +700,7 @@ if customize.tthTagsOnly or customize.fcncHutTagsOnly or customize.fcncHctTagsOn
             coupling = "Hut"
         elif customize.fcncHctTagsOnly:
             coupling = "Hct"
-        modifySystematicsWorkflowForFCNC(process, systlabels, phosystlabels, metsystlabels, jetsystlabels, coupling)
+        modifySystematicsWorkflowForFCNC(process, systlabels, phosystlabels, metsystlabels, jetsystlabels, coupling, customize.metaConditions["bTagSystematics"]["bTagCuts"])
         if customize.splitFactor is not None and customize.splitFactor != 1.:
             for tag in ["flashggFCNCLeptonicTag", "flashggFCNCHadronicTag"]:
                 getattr(process, tag).SplitFactor = cms.int32(customize.splitFactor)

@@ -7,6 +7,39 @@ CMSSW_VER=$5
 
 ARGS="${@:7}"
 
+function stageout {
+    COPY_SRC=$1
+    COPY_DEST=$2
+    retries=0
+    COPY_STATUS=1
+    until [ $retries -ge 3 ]
+    do
+        echo "Stageout attempt $((retries+1)): env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-copy -p -f -t 7200 --verbose --checksum ADLER32 ${COPY_SRC} ${COPY_DEST}"
+        env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-copy -p -f -t 7200 --verbose --checksum ADLER32 ${COPY_SRC} ${COPY_DEST}
+        COPY_STATUS=$?
+        if [ $COPY_STATUS -ne 0 ]; then
+            echo "Failed stageout attempt $((retries+1))"
+        else
+            echo "Successful stageout with $retries retries"
+            break
+        fi
+        retries=$[$retries+1]
+        echo "Sleeping for 30m"
+        sleep 30m
+    done
+    if [ $COPY_STATUS -ne 0 ]; then
+        echo "Removing output file because gfal-copy crashed with code $COPY_STATUS"
+        env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-rm --verbose ${COPY_DEST}
+        REMOVE_STATUS=$?
+        if [ $REMOVE_STATUS -ne 0 ]; then
+            echo "Uhh, gfal-copy crashed and then the gfal-rm also crashed with code $REMOVE_STATUS"
+            echo "You probably have a corrupt file sitting on hadoop now."
+            exit 1
+        fi
+    fi
+}
+
+
 WD=$PWD
 
 echo "[wrapper] OUTPUTDIR   = " ${OUTPUTDIR}
@@ -66,7 +99,9 @@ echo "Files in ouput folder"
 ls -ltr
 
 eval `scram unsetenv -sh`
+OUTPUTDIRSTORE=$(echo $OUTPUTDIR | sed "s#^/hadoop/cms/store#/store#")
 for file in $(find -name '*.root'); do
-    echo "[wrapper `date +\"%Y%m%d %k:%M:%S\"`] Attempting to gfal-copy file: $file to https://redirector.t2.ucsd.edu:1094//${OUTPUTDIR}/${OUTPUTFILENAME}_${INDEX}.root"
-    gfal-copy -p -f -t 4200 --verbose file://`pwd`/$file https://redirector.t2.ucsd.edu:1094//${OUTPUTDIR}/${OUTPUTFILENAME}_${INDEX}.root --checksum ADLER32
+    COPY_DEST="davs://redirector.t2.ucsd.edu:1094${OUTPUTDIRSTORE}/${OUTPUTFILENAME}_${INDEX}.root"
+    echo "[wrapper `date +\"%Y%m%d %k:%M:%S\"`] Attempting to gfal-copy file: $file to $COPY_DEST"
+    stageout $file $COPY_DEST
 done

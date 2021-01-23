@@ -68,7 +68,8 @@ def submit_workspaces(datasets, metadata):
                     cmssw_version = metadata["cmssw_ver"],
                     executable = metadata["executable"],
                     tarfile = "dummy_tar",
-                    condor_submit_params = { "sites" : "T2_US_UCSD,T2_US_CALTECH,T2_US_MIT,T2_US_WISCONSIN,T2_US_Nebraska,T2_US_Purdue,T2_US_Vanderbilt,T2_US_Florida" },
+                    condor_submit_params = {"sites" : "T2_US_UCSD,T2_US_CALTECH,T2_US_MIT,T2_US_WISCONSIN,T2_US_Nebraska,T2_US_Vanderbilt,T2_US_Florida,T3_US_UCR,T3_US_OSG,T3_US_Baylor,T3_US_Colorado,T3_US_Rice,T3_US_PuertoRico,T3_US_Cornell,T3_US_FIT,T3_US_FIU,T3_US_OSU,T3_US_Rutgers,T3_US_TAMU,T3_US_TAMU,T3_US_TTU,T3_US_UCD,T3_US_UMD,T3_US_UMiss"},
+                    #condor_submit_params = { "sites" : "T2_US_UCSD,T2_US_CALTECH,T2_US_MIT,T2_US_WISCONSIN,T2_US_Nebraska,T2_US_Purdue,T2_US_Vanderbilt,T2_US_Florida" },
                     special_dir = metadata["hadoop_path"],
                     arguments = info["args"]
                     )

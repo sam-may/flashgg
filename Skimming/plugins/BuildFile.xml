@@ -1,0 +1,7 @@
+e name="FWCore/Framework"/>
+<use name="FWCore/PluginManager"/>
+<use name="FWCore/ParameterSet"/>
+<use name="FWCore/Utilities"/>
+<use name="flashgg/DataFormats"/>
+<use name="flashgg/Taggers"/>
+<flags EDM_PLUGIN="1"/>

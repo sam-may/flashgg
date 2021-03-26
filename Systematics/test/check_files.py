@@ -5,7 +5,7 @@ import glob
 import sys
 
 #files = glob.glob("/hadoop/cms/store/user/smay/FCNC/workspaces*v5.7*/*/*.root")
-files = glob.glob("/hadoop/cms/store/user/smay/FCNC/workspaces*v5.8*/*/*.root")
+files = glob.glob("/hadoop/cms/store/user/smay/FCNC/workspaces*v5.10*/*/*.root")
 print("Found %d files" % (len(files)))
 
 bad_files = []

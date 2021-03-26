@@ -113,7 +113,7 @@ def get_samples_from_catalogs(catalogs, productions=None):
                         if "weights" in file.keys(): 
                             samples[sample_name][year][production]["weights"] += file["weights"]
     # Get XS's
-    for file in ["/home/users/sjmay/ttH/BabyMaker/CMSSW_10_5_0/src/flashgg/MetaData/data/cross_sections.json", "/home/users/sjmay/ttH/Loopers/scale1fb/cross_sections_flashgg.json"]:
+    for file in ["/home/users/smay/ttH/BabyMaker/CMSSW_10_5_0/src/flashgg/MetaData/data/cross_sections.json", "/home/users/smay/ttH/Loopers/scale1fb/cross_sections_flashgg.json"]:
         with open(file, "r") as f_in:
             cross_sections = json.load(f_in)
             for sample in samples.keys():
@@ -161,7 +161,7 @@ def get_samples_from_catalogs(catalogs, productions=None):
             samples[sample][year]["scale1fb"] = scale1fb
 
     # Hack to include FCNC
-    with open("/home/users/sjmay/ttH/Loopers/scale1fb/scale1fb.json", "r") as f_in:
+    with open("/home/users/smay/ttH/Loopers/scale1fb/scale1fb.json", "r") as f_in:
         fcnc_samples = json.load(f_in)
         for sample in fcnc_samples.keys():
             #if "FCNC" not in sample:

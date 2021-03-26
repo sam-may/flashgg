@@ -332,6 +332,7 @@ class JobConfig(object):
             
             isdata = self.processType == "data"
             if isdata or self.targetLumi > 0. or putarget:
+                print("\n\nEntering pu reweight\n\n")
                 ## look for analyzers which have lumiWeight as attribute
                 for name,obj in process.__dict__.iteritems():
                     

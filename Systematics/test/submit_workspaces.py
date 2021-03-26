@@ -293,6 +293,8 @@ for coupling, info in couplings.iteritems():
                 command = "$CMSSW_BASE/src/flashgg/Systematics/test/workspaceStd.py doHTXS=True doPdfWeights=False %s %s %s %s" % (coupling_selection, syst_selection, "outputFile=" + couplings[coupling][year]["outdir"] + "/output_FCNC_USER.root", "jobId=-1")
             os.system("sed -i 's@COMMAND@%s@g' %s" % (command, fcnc_executable))
 
+            print(command)
+
             metadata_["executable"] = fcnc_executable
             metadata_["tarfile"] = info[year]["outdir"] + "package.tar.gz"
             metadata_["hadoop_path"] = info[year]["stage_dir"].replace("/hadoop/cms/store/user/smay/","")

@@ -291,7 +291,42 @@ class JobConfig(object):
                 if hasattr(obj,"intLumi"):
                     obj.intLumi = self.targetLumi
 
-        if self.dataset and self.dataset != "":
+                
+            # pu reweighting
+            if self.puTarget != "":
+                print("Applying pu reweighting")
+                putarget = map(float, self.puTarget.split(","))
+                puObj = None
+                for name,obj in process.__dict__.iteritems():
+                    if hasattr(obj,"puReWeight"):
+                        puObj = obj
+
+                    elif hasattr(obj,"globalVariables") and hasattr(obj.globalVariables,"puReWeight"):
+                        puObj = obj.globalVariables
+
+                print(self.pu_distribs.keys())
+                print(self.metaConditions["globalTags"]["MC"])
+                if "94X_mc2017" in self.metaConditions["globalTags"]["MC"]:
+                    matches = ["94X_mc2017"]
+                elif "102X_upgrade2018" in self.metaConditions["globalTags"]["MC"]:
+                    matches = ["Autumn18"]
+                elif "94X_mcRun2_asymptotic_v3" in self.metaConditions["globalTags"]["MC"]:
+                    matches = ["Summer16"]
+                #if "Era2016" in self.metaConditions:
+                #    matches = ['Summer16']
+                #elif "Era207"
+                #matches = filter(lambda x: x in dsetname, self.pu_distribs.keys() )
+                print(matches)
+                samplepu = self.pu_distribs[matches[0]]
+                puObj.puReWeight = True
+                puObj.puBins = cms.vdouble( map(float, samplepu.probFunctionVariable) )
+                puObj.mcPu   = samplepu.probValue
+                puObj.dataPu = cms.vdouble(putarget)
+                puObj.useTruePu = cms.bool(True)
+                
+
+
+        if self.dataset and self.dataset != "" :
             dsetname,xsec,totEvents,files,maxEvents,sp_unused = self.dataset
             if type(xsec) == float or xsec == None:
                 print 
@@ -302,7 +337,7 @@ class JobConfig(object):
             samplepu = None
             if self.puTarget != "":
                 putarget = map(float, self.puTarget.split(","))
-                
+
             processId = self.getProcessId(dsetname)
             self.processId = processId
 
@@ -328,7 +363,7 @@ class JobConfig(object):
                 for name,obj in process.__dict__.iteritems():
                     if hasattr(obj, "sampleIndex"):
                         obj.sampleIndex = xsec["itype"]
-
+                            
             
             isdata = self.processType == "data"
             if isdata or self.targetLumi > 0. or putarget:

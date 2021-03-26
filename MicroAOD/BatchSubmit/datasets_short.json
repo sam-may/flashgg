@@ -1,0 +1,10 @@
+{
+    "processes": {
+        "sig_fcnc": {
+            "filesPerOutput": 1,
+            "datasets": [
+                "/TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hut-MadGraph5-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM"
+                ]
+        }
+    }
+}

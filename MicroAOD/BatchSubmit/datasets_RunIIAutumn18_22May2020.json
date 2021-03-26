@@ -1,0 +1,18 @@
+{
+    "processes": {
+        "sig_fcnc": {
+            "filesPerOutput": 1,
+            "datasets": [
+                    "/ST_FCNC-TH_Thadronic_HToaa_eta_hct-MadGraph5-pythia8/RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1/MINIAODSIM",
+                    "/ST_FCNC-TH_Tleptonic_HToaa_eta_hct-MadGraph5-pythia8/RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1/MINIAODSIM",
+                    "/ST_FCNC-TH_Tleptonic_HToaa_eta_hut-MadGraph5-pythia8/RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1/MINIAODSIM",
+                    "/ST_FCNC-TH_Thadronic_HToaa_eta_hut-MadGraph5-pythia8/RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1/MINIAODSIM",
+                    "/TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hut_TuneCP5-MadGraph5-pythia8/RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1/MINIAODSIM",
+                    "/TT_FCNC-aTtoHJ_Tleptonic_HToaa_eta_hct_TuneCP5-MadGraph5-pythia8/RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1/MINIAODSIM",
+                    "/TT_FCNC-TtoHJ_aTleptonic_HToaa_eta_hut_TuneCP5-MadGraph5-pythia8/RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1/MINIAODSIM",
+                    "/TT_FCNC-T2HJ_aTleptonic_HToaa_eta_hct_TuneCP5-MadGraph5-pythia8/RunIIAutumn18MiniAOD-tauDecays_102X_upgrade2018_realistic_v15-v1/MINIAODSIM" 
+                ]
+            }
+        }
+    }
+

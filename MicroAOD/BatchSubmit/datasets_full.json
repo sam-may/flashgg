@@ -1,0 +1,53 @@
+{
+    "processes": {
+        "data": {
+            "filesPerOutput": 1,
+            "datasets": [
+		"/DoubleEG/Run2016F-17Jul2018-v1/MINIAOD",
+		"/DoubleEG/Run2016B-17Jul2018_ver2-v1/MINIAOD",
+		"/DoubleEG/Run2016C-17Jul2018-v1/MINIAOD",
+		"/DoubleEG/Run2016B-17Jul2018_ver1-v1/MINIAOD",
+		"/DoubleEG/Run2016D-17Jul2018-v1/MINIAOD",
+		"/DoubleEG/Run2016H-17Jul2018-v1/MINIAOD",
+		"/DoubleEG/Run2016G-17Jul2018-v1/MINIAOD",
+		"/DoubleEG/Run2016E-17Jul2018-v1/MINIAOD"
+                ]
+            },
+        "sig_thq": {
+            "filesPerOutput": 1,
+            "datasets": [
+                ]
+            },
+        "sig_thw": {
+            "filesPerOutput": 1,
+            "datasets": [
+                ]
+            },
+        "sig_ggh": {
+            "filesPerOutput": 1,
+            "datasets": [
+                ]
+            },
+        "sig_vbf": {
+            "filesPerOutput": 1,
+            "datasets": [
+                ]
+            },
+        "sig_vh": {
+            "filesPerOutput": 1,
+            "datasets": [
+                ]
+            },
+        "sig_tth": {
+            "filesPerOutput": 1,
+            "datasets": [
+                ]
+            },
+        "bkg": {
+            "filesPerOutput": 1,
+            "datasets": [
+                ]
+            }
+        }
+    }
+

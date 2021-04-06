@@ -316,7 +316,7 @@ class JobConfig(object):
                 #    matches = ['Summer16']
                 #elif "Era207"
                 #matches = filter(lambda x: x in dsetname, self.pu_distribs.keys() )
-                print(matches)
+                print("Matched pu reweight to", matches)
                 samplepu = self.pu_distribs[matches[0]]
                 puObj.puReWeight = True
                 puObj.puBins = cms.vdouble( map(float, samplepu.probFunctionVariable) )

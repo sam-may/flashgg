@@ -438,6 +438,8 @@ namespace flashgg {
                 }
                 
 
+                std::cout << "PU Weight: " << globalVarsDumper_->cache().puweight << std::endl;
+
                 if( globalVarsDumper_ && globalVarsDumper_->puReWeight() ) {
                     if (globalVarsDumper_->cache().puweight > 999999. || globalVarsDumper_->cache().puweight < -999999.) {
                         weight = 0.;

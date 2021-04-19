@@ -62,6 +62,7 @@ namespace flashgg {
 
     void GlobalVariablesComputer::_init( const edm::ParameterSet & cfg )
     {
+
         //---initialize cahe
         cache_ = {0, 0, 0, 0, 0, 0, 0, 0};
         if( getPu_ ) {
@@ -140,6 +141,7 @@ namespace flashgg {
         Handle<VertexCollection> vertices;
         Handle<std::vector<PileupSummaryInfo> > puInfo;
         const edm::Event * fullEvent = dynamic_cast<const edm::Event *>(&evt);
+
         if (fullEvent != 0) {
             if( doRho_ ) {
                 fullEvent->getByToken( rhoToken_, rhoHandle );
@@ -185,6 +187,7 @@ namespace flashgg {
             }
             
             cache_.npu = ( useTruePu_ ? truePu : obsPu );
+            
             if( puReWeight_ ) {
                 if( cache_.npu <= puBins_.front() || cache_.npu >= puBins_.back() ) {
                     cache_.puweight = 0.;

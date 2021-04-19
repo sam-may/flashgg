@@ -304,26 +304,28 @@ class JobConfig(object):
                     elif hasattr(obj,"globalVariables") and hasattr(obj.globalVariables,"puReWeight"):
                         puObj = obj.globalVariables
 
-                print(self.pu_distribs.keys())
-                print(self.metaConditions["globalTags"]["MC"])
-                if "94X_mc2017" in self.metaConditions["globalTags"]["MC"]:
-                    matches = ["94X_mc2017"]
-                elif "102X_upgrade2018" in self.metaConditions["globalTags"]["MC"]:
-                    matches = ["Autumn18"]
-                elif "94X_mcRun2_asymptotic_v3" in self.metaConditions["globalTags"]["MC"]:
-                    matches = ["Summer16"]
-                #if "Era2016" in self.metaConditions:
-                #    matches = ['Summer16']
-                #elif "Era207"
-                #matches = filter(lambda x: x in dsetname, self.pu_distribs.keys() )
-                print("Matched pu reweight to", matches)
-                samplepu = self.pu_distribs[matches[0]]
-                puObj.puReWeight = True
-                puObj.puBins = cms.vdouble( map(float, samplepu.probFunctionVariable) )
-                puObj.mcPu   = samplepu.probValue
-                puObj.dataPu = cms.vdouble(putarget)
-                puObj.useTruePu = cms.bool(True)
-                
+
+                    if puObj is not None:
+                        print(self.metaConditions["globalTags"]["MC"])
+                        if "94X_mc2017" in self.metaConditions["globalTags"]["MC"]:
+                            matches = ["94X_mc2017"]
+                        elif "102X_upgrade2018" in self.metaConditions["globalTags"]["MC"]:
+                            matches = ["Autumn18"]
+                        elif "94X_mcRun2_asymptotic_v3" in self.metaConditions["globalTags"]["MC"]:
+                            matches = ["Summer16"]
+                        #if "Era2016" in self.metaConditions:
+                        #    matches = ['Summer16']
+                        #elif "Era207"
+                        #matches = filter(lambda x: x in dsetname, self.pu_distribs.keys() )
+                        print("Matched pu reweight to", matches)
+                        samplepu = self.pu_distribs[matches[0]]
+                        puObj.puReWeight = True
+                        puObj.puBins = cms.vdouble( map(float, samplepu.probFunctionVariable) )
+                        puObj.mcPu   = samplepu.probValue
+                        puObj.dataPu = cms.vdouble(putarget)
+                        puObj.useTruePu = cms.bool(True)
+                        
+                        #print(puObj)
 
 
         if self.dataset and self.dataset != "" :
@@ -439,7 +441,8 @@ class JobConfig(object):
                             puObj.mcPu   = samplepu.probValue
                             puObj.dataPu = cms.vdouble(putarget)
                             puObj.useTruePu = cms.bool(True)
-                    
+                            print("PU Reweighting will be applied")
+
             for name,obj in process.__dict__.iteritems():
                 if hasattr(obj,"processId"):
                     obj.processId = str(processId)

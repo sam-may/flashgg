@@ -31,7 +31,6 @@ namespace flashgg {
 
         void setProcessIndex(int processIndex) {processIndex_= processIndex;}
 
-
     private:
 
         void _init( const edm::ParameterSet &cfg );
